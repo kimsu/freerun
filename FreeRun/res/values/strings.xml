@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FreeRun</string>
+    <string name="menu_settings">Settings</string>
+    <string name="status_start">开始</string>
+    <string name="status_pause">暂停</string>
+    <string name="status_cancel">取消</string>
+    <string name="status_finished">结束</string>
+    <string name="status_continue">继续</string>
+    <string name="title_activity_walking_process">WalkingProcess</string>
+
+</resources>

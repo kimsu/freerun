@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_cover_blur" 
+    android:scrollbars="none"
+    >
+	<LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_rank"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@color/green" >
+        <ImageButton 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dip"
+        	android:layout_marginTop="5dip"
+            android:background="@drawable/left_back_selector"/>
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:text="编辑个人资料"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="70dip"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="头像"/>
+            <ImageView 
+                android:layout_width="50dip"
+                android:layout_height="50dip"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dip"
+                android:layout_centerVertical="true"
+                android:src="@drawable/default_user"/>
+        </RelativeLayout>
+        <View 
+			android:background="@drawable/bg_line_normal" 
+			android:layout_width="fill_parent"
+			android:layout_height="0.8dip" />        
+        <RelativeLayout 
+            android:id="@+id/nickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="昵称"/>
+            <TextView 
+				style="@style/LayoutEditUserInfoItemConent"
+                android:text="Jeff"/>
+        </RelativeLayout>
+         <View 
+			android:background="@drawable/bg_line_normal" 
+			android:layout_width="fill_parent"
+			android:layout_height="0.8dip" />        
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="性别"/>
+            <TextView 
+				style="@style/LayoutEditUserInfoItemConent"
+                android:text="男"/>
+        </RelativeLayout>
+        <View 
+			android:background="@drawable/bg_line_normal" 
+			android:layout_width="fill_parent"
+			android:layout_height="0.8dip" />        
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="所在地"/>
+            <TextView 
+				style="@style/LayoutEditUserInfoItemConent"
+                android:text="上海"/>
+        </RelativeLayout>
+        <View 
+			
+			android:layout_width="fill_parent"
+			android:layout_height="10dip" 
+			 />       
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="身高"/>
+            <TextView 
+				style="@style/LayoutEditUserInfoItemConent"
+                android:text="男"/>
+        </RelativeLayout>
+        <View 
+			android:background="@drawable/bg_line_normal" 
+			android:layout_width="fill_parent"
+			android:layout_height="0.8dip" />
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:onClick="onEditClick">
+            <TextView 
+				style="@style/LayoutEditUserInfoItemName"
+                android:text="体重"/>
+            <TextView 
+				style="@style/LayoutEditUserInfoItemConent"
+                android:text="62Kg"/>
+        </RelativeLayout>
+        
+		<Button android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:paddingTop="5dip"
+		    android:paddingBottom="5dip"
+		    android:layout_marginLeft="15dip"
+		    android:layout_marginRight="15dip"
+		    android:layout_marginTop="15dip"
+		    android:layout_marginBottom="20dip"
+		    android:background="@color/red"
+		    android:text="退出登录"
+		    android:textSize="18sp"/>
+    </LinearLayout>
+</LinearLayout>
+</ScrollView>

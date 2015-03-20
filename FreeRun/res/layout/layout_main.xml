@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_main"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="false"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical" >
+
+     <FrameLayout
+        android:id="@+id/titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/palegreen">
+        <ImageButton 
+            android:id="@+id/user_icon"
+            android:layout_width="45dip"
+            android:layout_height="45dip"
+            android:src="@drawable/run_assistant_logo"
+            android:layout_gravity="left"/>
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="20dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="FreeRun"
+        />
+   	</FrameLayout>
+    <RelativeLayout
+        android:id="@+id/layout_all"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+        
+        
+        <LinearLayout
+            android:id="@+id/layout_bottom"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/palegreen"
+            android:gravity="center_vertical"
+            android:orientation="vertical" >
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
+
+                <!--
+                <LinearLayout
+                    android:id="@+id/layout_ready"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/tv_gsp_state"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="GPS\u5b9a\u4f4d\u53ef\u80fd\u9700\u8981\u82b1\u8d39\u51e0\u79d2\u949f"
+                        android:textColor="@android:color/white" />
+                    <Button
+                        android:id="@+id/btn_train_type"
+                        android:layout_width="250.0dip"
+                        android:layout_height="@dimen/topbar_btn_size"
+                        android:layout_marginTop="30.0dip"
+                        android:background="@drawable/btn_green_semicircle_selector"
+                        android:drawableRight="@drawable/icon_list_arrow"
+                        android:gravity="center"
+                        android:paddingLeft="@dimen/layout_running_margin"
+                        android:paddingRight="@dimen/layout_running_margin"
+                        android:text="\u6a21\u5f0f\uff1a\u534a\u7a0b\u9a6c\u62c9\u677e\u8bad\u7ec3"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/textSize_32pt" />
+                </LinearLayout>
+                -->
+                <TextView
+                    android:id="@+id/tv_action_number"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textColor="#ffed5465"
+                    android:textSize="120.0sp" />
+
+                <!-- display layout for running state -->
+                <LinearLayout
+                    android:id="@+id/layout_running_on"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/palegreen"
+                    android:orientation="vertical" >
+
+                    <!-- RelativeLayout used to display the total time and distance value -->
+                    <RelativeLayout
+                        android:id="@+id/layout_base_show"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical" >
+
+                        <!--
+                        <ProgressBar
+                            android:id="@+id/pb_train_progress"
+                            style="@android:style/Widget.ProgressBar.Horizontal"
+                            android:layout_width="fill_parent"
+                            android:layout_height="4.0dip"
+                            android:layout_marginBottom="20.0dip"
+                            android:layout_marginLeft="50.0dip"
+                            android:layout_marginRight="50.0dip"
+                            android:layout_marginTop="6.0dip"
+                            android:background="@drawable/bg_white_semicircle"
+                            android:max="100"
+                            android:progressDrawable="@drawable/progress_style" />
+                        -->
+                        <!-- distance that we have been running for  -->
+                        <TextView
+                            android:id="@+id/tv_run_distance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_centerHorizontal="true"
+                            android:text="0.00"
+                            android:textColor="@android:color/white"
+                            android:textSize="80.0dip" />
+
+                        <!-- time that has been used -->
+                        <TextView
+                            android:id="@+id/tv_run_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5.0dip"
+                            android:gravity="center" 
+                            android:layout_centerHorizontal="true"
+                            android:text="02:15:56"
+                            android:layout_below="@id/tv_run_distance"
+                            android:textColor="@android:color/white"
+                            android:textSize="30.0sp" />
+
+                        <TextView
+                            android:id="@+id/tv_run_kilometer_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@+id/tv_run_distance"
+                            android:layout_alignBaseline="@id/tv_run_distance"
+                            android:gravity="center"
+                            android:text="\u516c\u91cc"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp" />
+
+                    </RelativeLayout>
+
+                    <!-- 
+                    <View
+                        android:layout_width="fill_parent"
+                        android:layout_height="0.5dip"
+                        android:layout_marginBottom="10.0dip"
+                        android:layout_marginLeft="20.0dip"
+                        android:layout_marginRight="20.0dip"
+                        android:layout_marginTop="10.0dip"
+                        android:background="#994e4e4e" />
+                    -->
+
+                    <!-- LinearLayout used two sub LinearLayouts to display the details of running,
+                         first line(LinearLayout): displays speed, pace and fuel values;
+                         second line(LinearLayout): display prompt words for the three type of values.
+                     -->
+                    <LinearLayout
+                        android:id="@+id/other_details_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical" >
+
+                        <LinearLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" >
+
+                            <TextView
+                                android:id="@+id/tv_run_speed"
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="53.40"
+                                android:textColor="@android:color/white"
+                                android:textSize="20.0sp" />
+
+                            <TextView
+                                android:id="@+id/tv_run_pace"
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="05&apos;25&apos;&apos;"
+                                android:textColor="@android:color/white"
+                                android:textSize="20.0sp" />
+
+                            <TextView
+                                android:id="@+id/tv_run_fuel"
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="1426"
+                                android:textColor="@android:color/white"
+                                android:textSize="20.0sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" >
+
+                            <TextView
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="\u5747\u901f:\u516c\u91cc/\u5c0f\u65f6"
+                                android:textColor="@android:color/white"
+                                android:textSize="12.0sp" />
+
+                            <TextView
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="\u914d\u901f:\u5206\u949f/\u516c\u91cc"
+                                android:textColor="@android:color/white"
+                                android:textSize="12.0sp" />
+
+                            <TextView
+                                android:layout_width="0.0dip"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                                android:gravity="center"
+                                android:text="\u6d88\u8017\u5361\u8def\u91cc:\u5927\u5361"
+                                android:textColor="@android:color/white"
+                                android:textSize="12.0sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </FrameLayout>
+
+            <include
+                android:id="@+id/view_run_controller"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10.0dip"
+                android:layout_marginTop="10.0dip"
+                layout="@layout/view_run_controller" />
+        </LinearLayout>
+        
+        
+        <!-- Relativelayout(id/layout_bmap) for showing baidu map and some hint widgets on it. -->
+        <RelativeLayout
+            android:id="@+id/layout_bmap"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/layout_bottom" >
+
+            <com.baidu.mapapi.map.MapView
+                android:id="@+id/map_view"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:clickable="true" />
+
+            <ImageView
+                android:id="@+id/img_bmap_run_gps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8.0dip"
+                android:background="@drawable/gps_no"
+                android:contentDescription="@string/app_name" />
+
+            <ImageView
+                android:id="@+id/img_bmap_full"
+                android:layout_width="50.0dip"
+                android:layout_height="50.0dip"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:alpha="0.7"
+                android:contentDescription="@string/app_name"
+                android:padding="10.0dip"
+                android:src="@drawable/run_map_expand_button1" />
+
+            <!--
+            <TextView
+                android:id="@+id/tv_pause_warn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@drawable/error_tip_bg"
+                android:gravity="center"
+                android:lineSpacingExtra="5.0dip"
+                android:paddingLeft="10.0dip"
+                android:paddingRight="10.0dip"
+                android:paddingTop="10.0dip"
+                android:text="@string/pause_details"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:visibility="visible" />
+            -->
+            <View
+                android:id="@+id/map_view_touch"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</LinearLayout>

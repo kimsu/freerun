@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="3.0"
+    android:gravity="center"
+    android:paddingLeft="10.0dip"
+    android:paddingRight="10.0dip" >
+
+    <!-- RelativeLayout is used  for locked state(After locked) -->
+    <RelativeLayout
+        android:id="@+id/layout_lock"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center" >
+
+        <TextView
+            android:id="@+id/tv_running_locking_bg"
+            android:layout_width="fill_parent"
+            android:layout_height="@dimen/running_controller_small_size"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="20.0dip"
+            android:layout_marginRight="20.0dip"
+            android:background="@drawable/unlock_bg"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="18.0sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_running_locking_text"
+            android:layout_width="fill_parent"
+            android:layout_height="@dimen/running_controller_small_size"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="20.0dip"
+            android:layout_marginRight="20.0dip"
+            android:gravity="center"
+            android:text="滑动来解锁"
+            android:textColor="@color/white"
+            android:textSize="18.0sp" 
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/ibtn_running_locking"
+            android:layout_width="@dimen/running_locking_width"
+            android:layout_height="@dimen/running_locking_height"
+            android:background="@null"
+            android:paddingBottom="10.0dip"
+            android:paddingLeft="20.0dip"
+            android:paddingTop="10.0dip"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_locking"
+            android:visibility="visible" />
+    </RelativeLayout>
+
+    <!-- LinearLayout is used for displaying the three Buttons, and ImageButton displyed to lock the screen(before locked) -->
+    <LinearLayout
+        android:id="@+id/layout_controller"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="20.0dip"
+        android:layout_marginRight="20.0dip"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/btn_running_back"
+            android:layout_width="@dimen/running_controller_small_size"
+            android:layout_height="@dimen/running_controller_small_size"
+            android:background="@drawable/run_circle_red_full"
+            android:gravity="center"
+            android:text="取消"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/textSize_32pt" />
+
+        <ImageButton
+            android:id="@+id/ibtn_running_lock"
+            android:layout_width="@dimen/running_controller_small_size"
+            android:layout_height="@dimen/running_controller_small_size"
+            android:background="@drawable/oval_45"
+            android:src="@drawable/lock_white"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="0.0dip"
+            android:layout_height="0.0dip"
+            android:layout_weight="1.0" />
+
+
+        <Button
+            android:id="@+id/btn_running_middle"
+            android:layout_width="@dimen/running_controller_big_size"
+            android:layout_height="@dimen/running_controller_big_size"
+            android:background="@drawable/run_circle_green_full"
+            android:gravity="center"
+            android:text="开始"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/textSize_40pt" />
+
+        <View
+            android:layout_width="0.0dip"
+            android:layout_height="0.0dip"
+            android:layout_weight="1.0" />
+
+        <Button
+            android:id="@+id/btn_running_right"
+            android:layout_width="@dimen/running_controller_small_size"
+            android:layout_height="@dimen/running_controller_small_size"
+            android:background="@drawable/run_circle_red_full"
+            android:gravity="center"
+            android:text="结束"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/textSize_32pt" />
+    </LinearLayout>
+
+</FrameLayout>
