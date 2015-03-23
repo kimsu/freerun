@@ -134,7 +134,7 @@
                             android:layout_marginTop="5.0dip"
                             android:gravity="center" 
                             android:layout_centerHorizontal="true"
-                            android:text="02:15:56"
+                            android:text="00:00:00"
                             android:layout_below="@id/tv_run_distance"
                             android:textColor="@android:color/white"
                             android:textSize="30.0sp" />
@@ -185,7 +185,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:gravity="center"
-                                android:text="53.40"
+                                android:text="00:00"
                                 android:textColor="@android:color/white"
                                 android:textSize="20.0sp" />
 
@@ -195,7 +195,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:gravity="center"
-                                android:text="05&apos;25&apos;&apos;"
+                                android:text="00&apos;00&apos;&apos;"
                                 android:textColor="@android:color/white"
                                 android:textSize="20.0sp" />
 
@@ -205,7 +205,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:gravity="center"
-                                android:text="1426"
+                                android:text="0"
                                 android:textColor="@android:color/white"
                                 android:textSize="20.0sp" />
                         </LinearLayout>
@@ -269,13 +269,12 @@
                 android:layout_height="fill_parent"
                 android:clickable="true" />
 
-            <ImageView
-                android:id="@+id/img_bmap_run_gps"
+            <TextView
+                android:id="@+id/tv_bmap_run_gps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8.0dip"
-                android:background="@drawable/gps_no"
-                android:contentDescription="@string/app_name" />
+                android:text="GPS信号：" />
 
             <ImageView
                 android:id="@+id/img_bmap_full"
