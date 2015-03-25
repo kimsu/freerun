@@ -35,10 +35,7 @@
 
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
-            android:label="@string/app_name"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:launchMode="singleTask"
-             >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -59,6 +56,12 @@
             android:name="com.benpaoba.freerun.WalkingProcess"
             android:label="@string/title_activity_walking_process" >
         </activity>
+        <provider 
+            android:name=".database.FreeRunContentProvider"
+            android:authorities="com.benpaoba.freerun.contentprovider"
+            android:exported="false" >
+            
+        </provider>
         
     </application>
 
