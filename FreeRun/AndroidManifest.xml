@@ -35,7 +35,10 @@
 
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:launchMode="singleTask"
+             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

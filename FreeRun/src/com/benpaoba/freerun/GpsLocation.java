@@ -12,4 +12,10 @@ class GpsLocation {
 		this.lat = latitude;
 		this.lng = longtitude;
 	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "(lat : " + lat + ", lng: " + lng + ")";
+	}
+	
 }

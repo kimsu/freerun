@@ -1,6 +1,7 @@
 package com.benpaoba.freerun;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,11 +15,12 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
-import android.media.SoundPool;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,19 +64,19 @@ public class RunningMainActivity extends Activity {
 	public static final String TAG = "RunningMap";
 	
 	private final static float DEFAULT_ZOOM_LEVEL = 18.0f;
-	private final static float UPPER_ZOOM_LEVEL = 19.0f;
+	private final static float UPPER_ZOOM_LEVEL = 18.0f;
 	private int mSportStatus;
 	private DistanceInfoDao mDistanceInfoDao;
 	// 定位相关
     LocationClient mLocClient;
 	private CustomLocationListenner mLocationListener = new CustomLocationListenner();
-	private LocationMode mCurrentMode;
 	BitmapDescriptor mCurrentMarker;
     private ActivityManager mActivityManager;
-    private DevicePolicyManager mDevicePolicyManager;
+
 	MapView mMapView;
 	BaiduMap mBaiduMap;
 	// UI相关
+	private TextView mGpsSignalTextView;
 	private ViewGroup mTotalContentLayout;
 	private ViewGroup mBaiduMapLayout;
 	private ViewGroup mBottomLayout;
@@ -93,7 +95,7 @@ public class RunningMainActivity extends Activity {
 	private TextView mRunDistanceTextView;
 	private TextView mRunTimeTextView;
 	
-	boolean isFirstLoc = true;// 是否首次定位
+	boolean mIsFirstLoc = true;
 
 	private boolean mIsBaiduMapFullScreen = false;
 	
@@ -103,7 +105,7 @@ public class RunningMainActivity extends Activity {
 	private int mUpdateInterval = 0;
 	
     private SoundClips.Player mSoundPlayer;
-    
+    private Context mContext;
     private static final int SPEED = 30;
 	private static final int SLEEP_TIME = 5;
 	
@@ -123,20 +125,23 @@ public class RunningMainActivity extends Activity {
 	private ViewTreeObserver viewTreeObserver;
 	private ImageButton userIcon;
     
-    
+	private LocationManager mLocationManager;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mContext = this;
 		Log.d(TAG,"onCreate, id : " + Thread.currentThread().getId());
 		mDistanceInfoDao = new DistanceInfoDao(this);
 		setContentView(R.layout.activity_main);
 		initView();
 		mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-		mDevicePolicyManager = (DevicePolicyManager) 
-				getSystemService(Context.DEVICE_POLICY_SERVICE);
-		 
+		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		mLocationManager.addGpsStatusListener(mGpsStatusListener);
+		
 		mSportStatus = SportsManager.STATUS_READY;
 		//获取资源
+		mGpsSignalTextView = (TextView) findViewById(R.id.tv_bmap_run_gps);
+	    
 		mTotalContentLayout = (RelativeLayout)findViewById(R.id.layout_all);
 		mBaiduMapLayout = (RelativeLayout)findViewById(R.id.layout_bmap);
 		mBottomLayout = (LinearLayout)findViewById(R.id.layout_bottom);
@@ -187,7 +192,6 @@ public class RunningMainActivity extends Activity {
 	 	    mRightButton.setVisibility(View.INVISIBLE);
 	 	}
 	 	
-	    mCurrentMode = LocationMode.NORMAL;
 	    // 地图初始化
 	 	mMapView = (MapView) findViewById(R.id.map_view);
 	 	mBaiduMap = mMapView.getMap();
@@ -208,7 +212,49 @@ public class RunningMainActivity extends Activity {
         mLocClient.start();
         mLocClient.requestLocation();
 	}
-		
+	
+	private int mUsedSatellitesCount = 0;
+	private final GpsStatus.Listener mGpsStatusListener = new GpsStatus.Listener() {
+		public void onGpsStatusChanged(int event) { // GPS状态变化时的回调，如卫星数
+			GpsStatus status = mLocationManager.getGpsStatus(null); //取当前状态
+			if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+				int maxSatellites = status.getMaxSatellites();
+				Iterator<GpsSatellite> it = status.getSatellites().iterator();
+				while (it.hasNext() && mUsedSatellitesCount <= maxSatellites) {
+					GpsSatellite s = it.next();
+					if(s.usedInFix()) {
+						mUsedSatellitesCount++;
+					}
+				}
+			}
+			int gpsState = GpsManager.getGpsStatus(mUsedSatellitesCount);
+			updateGpsSignalTextView(gpsState);
+		}
+	};
+	
+	private void updateGpsSignalTextView(int gpsState) {
+		String gpsDescription = null;
+		switch(gpsState) {
+		case GpsManager.GPS_BAD:
+			gpsDescription = String.format(
+					getResources().getString(R.string.gps_signal_text),
+					getResources().getString(R.string.bad_gps));
+			break;
+		case GpsManager.GPS_NORMAL:
+			gpsDescription = String.format(
+					getResources().getString(R.string.gps_signal_text),
+					getResources().getString(R.string.nomarl_gps));
+			break;
+		case GpsManager.GPS_GOOD:
+			gpsDescription = String.format(
+					getResources().getString(R.string.gps_signal_text),
+					getResources().getString(R.string.good_gps));
+			break;
+		default:
+			break;
+		}
+		mGpsSignalTextView.setText(gpsDescription);
+	}
 	private void initView() {
 		layout_left = (LinearLayout) findViewById(R.id.layout_left);
 		layout_right = (LinearLayout) findViewById(R.id.layout_right);
@@ -272,37 +318,49 @@ public class RunningMainActivity extends Activity {
 				finish();
 				break;
 				
-			case R.id.btn_running_middle:
-				MapStatusUpdate u = MapStatusUpdateFactory.zoomTo(UPPER_ZOOM_LEVEL);
-				mBaiduMap.animateMapStatus(u);
-				
+			case R.id.btn_running_middle:		
 				if(mSportStatus == SportsManager.STATUS_READY) {
-					startService(new Intent(RunningMainActivity.this, LocationService.class));
-					Intent intent = new Intent(SportsManager.STATUS_ACTION);
-					intent.putExtra("command",SportsManager.CMD_START);
-					sendBroadcast(intent);
-					mSoundPlayer.play(SoundClips.START_SPORT,0,0,0);
-					mSportStatus = SportsManager.STATUS_RUNNING;
-					mMiddleButton.setText(R.string.status_pause);
-					mLeftButton.setVisibility(View.GONE);
-					mRightButton.setText(R.string.status_finished);
-					mRightButton.setVisibility(View.VISIBLE);
-					mLockImageButton.setVisibility(View.VISIBLE);
-					mRunningStateLayout.setVisibility(View.VISIBLE);
-					
-					DistanceInfo mDistanceInfo = new DistanceInfo();
-					mDistanceInfo.setDistance(0f); // 距离初始值
-					mDistanceInfo.setLongitude(RunningApplication.mLongtitude); // 经度初始值
-					mDistanceInfo.setLatitude(RunningApplication.mLatitude); // 纬度初始值
-					int id = mDistanceInfoDao.insertAndGet(mDistanceInfo);
-					if (id != -1) {
-						RunningApplication.mRunningInfoId = id;
-						Toast.makeText(RunningMainActivity.this, "已经开始跑步...", Toast.LENGTH_SHORT).show();
+					if(GpsManager.isGpsOpen(RunningMainActivity.this)) {
+						startService(new Intent(RunningMainActivity.this, LocationService.class));
+						Intent intent = new Intent(SportsManager.STATUS_ACTION);
+						intent.putExtra("command",SportsManager.CMD_START);
+						Log.d("LocationService","RunningMainActivity, sendBroadcast()");
+						sendBroadcast(intent);
+						mSoundPlayer.play(SoundClips.START_SPORT,0,0,0);
+						mSportStatus = SportsManager.STATUS_RUNNING;
+						mMiddleButton.setText(R.string.status_pause);
+						mLeftButton.setVisibility(View.GONE);
+						mRightButton.setText(R.string.status_finished);
+						mRightButton.setVisibility(View.VISIBLE);
+						mLockImageButton.setVisibility(View.VISIBLE);
+						mRunningStateLayout.setVisibility(View.VISIBLE);
+						
+						DistanceInfo mDistanceInfo = new DistanceInfo();
+						mDistanceInfo.setDistance(0f); // 距离初始值
+						mDistanceInfo.setLongitude(RunningApplication.mLongtitude); // 经度初始值
+						mDistanceInfo.setLatitude(RunningApplication.mLatitude); // 纬度初始值
+						int id = mDistanceInfoDao.insertAndGet(mDistanceInfo);
+						if (id != -1) {
+							RunningApplication.mRunningInfoId = id;
+							Toast.makeText(RunningMainActivity.this, "已经开始跑步...", Toast.LENGTH_SHORT).show();
+						} else {
+							Toast.makeText(RunningMainActivity.this, "id is -1,无法执行距离计算代码块", Toast.LENGTH_SHORT).show();
+						}
+						
+						startTimer();
 					} else {
-						Toast.makeText(RunningMainActivity.this, "id is -1,无法执行距离计算代码块", Toast.LENGTH_SHORT).show();
+						new AlertDialog.Builder(RunningMainActivity.this)
+				        .setTitle(mContext.getString(R.string.open_gps_title))
+				        .setMessage(mContext.getString(R.string.open_gps_message))
+	                    .setPositiveButton(mContext.getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface arg0, int arg1) {
+								// TODO Auto-generated method stub
+								GpsManager.startIntentForGpsSetting(mContext);
+							}
+						})
+						.setNegativeButton(mContext.getString(R.string.button_cancel), null).show();
 					}
-					
-					startTimer();
 				}else if(mSportStatus == SportsManager.STATUS_RUNNING) {
 					Intent intent = new Intent(SportsManager.STATUS_ACTION);
 					intent.putExtra("command",SportsManager.CMD_PAUSE);
@@ -401,6 +459,7 @@ public class RunningMainActivity extends Activity {
 		}
 	}
 	
+	private List<LatLng> mPointLists;
 	/**
 	 * 定位SDK监听函数
 	 */
@@ -416,23 +475,34 @@ public class RunningMainActivity extends Activity {
 							+ ", locationType:" + location.getLocType() + ", Thread :"+Thread.currentThread().getId());
 
 			// map view 销毁后不在处理新接收的位置
-			if (location == null || mMapView == null)
+			if (location == null || mMapView == null) {
 				return;
+			}
 			MyLocationData locData = new MyLocationData.Builder()
 					.accuracy(location.getRadius())
 					// 此处设置开发者获取到的方向信息，顺时针0-360
 					.direction(100).latitude(location.getLatitude())
 					.longitude(location.getLongitude()).build();
 			mBaiduMap.setMyLocationData(locData);
-			LatLng ll = new LatLng(location.getLatitude(),
-					location.getLongitude());
-			MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,
-					DEFAULT_ZOOM_LEVEL);
-			mBaiduMap.animateMapStatus(u);
+			if(mIsFirstLoc) {
+				mIsFirstLoc = false;
+			    LatLng ll = new LatLng(location.getLatitude(),
+				    	location.getLongitude());
+			    MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,
+					    DEFAULT_ZOOM_LEVEL);
+			    mBaiduMap.animateMapStatus(u);
+			}
 
 			// draw the sports path
-			if (mSportStatus == SportsManager.STATUS_RUNNING && location.getLocType() == BDLocation.TypeGpsLocation) {
+			if (mSportStatus == SportsManager.STATUS_RUNNING && 
+					(location.getLocType() == BDLocation.TypeGpsLocation || 
+					location.getLocType() == BDLocation.TypeNetWorkLocation)) {
 				mUpdateInterval++;
+				if(mUpdateInterval == 3) {
+					//DataSaveUtils.writeToFile(location.getLatitude(), location.getLongitude());
+					//mPointLists.add(new )
+					mUpdateInterval = 0;
+				}
 				LatLng currentPoint = new LatLng(location.getLatitude(),
 						location.getLongitude());
 				List<LatLng> pointLists = new ArrayList<LatLng>();
@@ -465,36 +535,29 @@ public class RunningMainActivity extends Activity {
 	private TimerTask mUpdateTimerValuesTask = null;
 	private Timer mTimer;
 	
+	private final static int REFRESH_UI = 0x01;
+	private final static int PLAY_SOUND = 0x02;
 	private Handler mUpdateDisplayHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-        	Log.d(TAG,"begin to call updateDisplay in handleMessage");
-            updateDisplay();
+        	switch(msg.what) {
+        	case REFRESH_UI:
+                updateDisplay();
+                break;
+        	case PLAY_SOUND:
+        		double distance = (Double)msg.obj;
+        		mSoundPlayer.play(SoundClips.TIMETICK_EACHMILE_SPORT, (int)distance, 
+	    				mCurrentIndividualStatusSeconds, 
+	    				(mCurrentIndividualStatusSeconds - mTimeBeforeOneMileSeconds));
+	    		mTimeBeforeOneMileSeconds = mCurrentIndividualStatusSeconds;
+        		break;
+        	}
         }
     };
     
     //update the time and distance display
     protected void updateDisplay() {
-    	Log.d(TAG,"updateDisplay(), mUpdateInterval = " + mUpdateInterval);
     	mRunTimeTextView.setText(TimeFormatHelper.formatTime(mCurrentIndividualStatusSeconds));
-    	/*
-    	mUpdateInterval++;
-    	LatLng currentPoint = new LatLng(RunningApplication.mLatitude, RunningApplication.mLongtitude);
-		List<LatLng> pointLists = new ArrayList<LatLng>();
-		Log.d(TAG,"currentPoint = " + currentPoint + ", mPointLast = " + mPointLast + ", mPointBeforeLast = " + mPointBeforeLast);
-    	if(mUpdateInterval == 5) {
-			if(mPointBeforeLast != null && mPointBeforeLast != null) {
-			    pointLists.add(mPointBeforeLast);
-			    pointLists.add(mPointLast);
-			    pointLists.add(currentPoint);
-				OverlayOptions ooPolyline = new PolylineOptions().width(10)
-						.color(0xAAFF0000).points(pointLists);
-				mBaiduMap.addOverlay(ooPolyline);
-			}
-			
-			mUpdateInterval = 0;
-		}
-		*/
     }
     
 	/**
@@ -528,17 +591,11 @@ public class RunningMainActivity extends Activity {
     protected synchronized void updateTimerValues() {
     	mCurrentIndividualStatusSeconds++;
         Log.d(TAG,"updateTimerValues(), currentIndividualStatusSeconds = " + mCurrentIndividualStatusSeconds);
-        /*
-        if (currentIndividualStatusSeconds ...) {
-            playWarningSound();
-        }
-        */
-        mUpdateDisplayHandler.sendEmptyMessage(0);
+        mUpdateDisplayHandler.sendMessage(Message.obtain(mUpdateDisplayHandler, REFRESH_UI));
     }
     
     private synchronized void cancelTimer() {
         if (mTimer != null) {
-            Log.d(TAG,"Canceling timer");
             mTimer.cancel();
             mTimer = null;
         }
@@ -551,7 +608,6 @@ public class RunningMainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		mMapView.onPause();
-		Log.d(TAG,"RunningActivity, onPause()");
 		super.onPause();
 		if (mSoundPlayer != null) {
             mSoundPlayer.release();
@@ -564,7 +620,6 @@ public class RunningMainActivity extends Activity {
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
-		Log.d(TAG,"RunningActivity, onStop()");
 		super.onStop();
 	}
 
@@ -573,18 +628,19 @@ public class RunningMainActivity extends Activity {
 		mMapView.onResume();
 		super.onResume();
 		mSoundPlayer = SoundClips.getPlayer(this);
+		String gpsSinalDescription = String.format(
+				getResources().getString(R.string.gps_signal_text),
+				GpsManager.isGpsOpen(this) ? getResources().getString(R.string.bad_gps) :
+					getResources().getString(R.string.no_gps)
+				);
+		mGpsSignalTextView.setText(gpsSinalDescription);
 		userIcon =(ImageButton)findViewById(R.id.user_icon);
-		
+		/*
 		userIcon.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				
-				Intent intent = new Intent(getApplicationContext(), LoginAndProfileInfo.class);
-				getApplicationContext().startActivity(intent);
-				
-				
-				/*
+
 				RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) layout_left
 						.getLayoutParams();
 				TextView title = (TextView) findViewById(R.id.title);
@@ -597,10 +653,9 @@ public class RunningMainActivity extends Activity {
 					new AsynMove().execute(SPEED);
 					title.setVisibility(View.GONE);
 				}
-				*/
 			}
 		} );
-		
+		*/
 	}
 
 	 private class MyOnGestureListener implements OnGestureListener {
@@ -751,7 +806,7 @@ public class RunningMainActivity extends Activity {
         }
 		super.onDestroy();
 	}
-	
+	private double distance = 0;
 	private class UpdateDistanceTask extends AsyncTask<Void, Void, String> {
 		@Override
 		protected String doInBackground(Void... arg0) {
@@ -764,14 +819,12 @@ public class RunningMainActivity extends Activity {
 				result = Utils.getValueWith2Suffix(distanceInfo.getDistance());
 			}
 			
-			float distance = distanceInfo.getDistance();
+			double distance = distanceInfo.getDistance() / 1000;
 			BigDecimal b = new BigDecimal(distance); 
 	    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-	    	if((formatDistance > 0) && (formatDistance % 1) == 0) {
-	    		mSoundPlayer.play(SoundClips.TIMETICK_EACHMILE_SPORT, (int)formatDistance, 
-	    				mCurrentIndividualStatusSeconds, 
-	    				(mCurrentIndividualStatusSeconds - mTimeBeforeOneMileSeconds));
-	    		mTimeBeforeOneMileSeconds = mCurrentIndividualStatusSeconds;
+	    	Log.d(TAG,"updateDistance, formatDistance = " + formatDistance);
+	    	if((formatDistance > 0) && ((formatDistance * 100) % 100) == 0 && (!mSoundPlayer.isPlaying())) {
+	    		mUpdateDisplayHandler.sendMessage(Message.obtain(mUpdateDisplayHandler, PLAY_SOUND,formatDistance));
 	    	}
 			return result;
 		}

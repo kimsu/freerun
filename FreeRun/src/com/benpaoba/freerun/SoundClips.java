@@ -8,6 +8,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
+
 /*
  * This class controls the sound playback according to the API level.
  */
@@ -28,9 +29,11 @@ public class SoundClips {
     
     private static final int MILLISECONDS_INTERVAL = 600;
 
+    private boolean isPlaying = false;
     public interface Player {
         public void release();
         public void play(int action, int totalMiles, int totalSeconds, int nearByOneMileTime);
+        public boolean isPlaying();
     }
 
     public static Player getPlayer(Context context) {
@@ -143,6 +146,12 @@ public class SoundClips {
                 mSoundPool = null;
             }
         }
+        
+        private volatile boolean isPlaying = false;
+        
+        public boolean isPlaying() {
+        	return isPlaying;
+        }
 
         @Override
         public synchronized void play(final int action, final int totalMiles, final int totalSeconds, final int nearByOneMileTime) {
@@ -153,6 +162,7 @@ public class SoundClips {
             new Thread() {
 				@Override
 				public void run() {
+					isPlaying = true;
 		            if(action == mActions[4]) {
 		            	int resourceId;
 						try {
@@ -219,12 +229,14 @@ public class SoundClips {
 		                    mSoundPool.play(mSoundIDToPlay, 1f, 1f, 0, 0, 1f);
 		                }
 		            }
+		            isPlaying = false;
 				}
             	
             }.start();
         }
         
 
+        
         @Override
         public void onLoadComplete(SoundPool pool, int soundID, int status) {
         	Log.d(TAG,"onLoadComplete, status = " + status);
@@ -255,9 +267,9 @@ public class SoundClips {
         	int numberOfHundrends = digit / 100;
         	int numberOfTens = (digit - numberOfHundrends * 100) / 10;
         	int numberOfDigits = (digit - numberOfHundrends * 100) % 10;
-        	final int hundredResoureId;
-        	final int tenResourceId;
-        	final int digitResourceId;
+        	int hundredResoureId;
+        	int tenResourceId;
+        	int digitResourceId;
         	Log.d(TAG,"numerOfHundreds = " + numberOfHundrends);
         	switch(numberOfHundrends) {
         	case 1:
@@ -334,7 +346,7 @@ public class SoundClips {
         	default:
         		tenResourceId = ID_NOT_LOADED;
         	}
-        	if(numberOfTens == 0 && numberOfHundrends > 0) {
+        	if(numberOfTens == 0 && numberOfHundrends > 0 && numberOfDigits > 0) {
         		int zeroId = mSoundResMap.get(R.raw.zero);
         		if(zeroId != ID_NOT_LOADED) {
         		    mSoundPool.play(zeroId, 1f, 1f, 0, 0, 1f);
@@ -382,6 +394,10 @@ public class SoundClips {
         	default:
         		digitResourceId = ID_NOT_LOADED;
         	}
+        	
+        	if(numberOfTens == 0 && numberOfDigits == 0 && numberOfHundrends == 0) {
+        		digitResourceId = mSoundResMap.get(R.raw.zero);
+        	}
         	if(digitResourceId != ID_NOT_LOADED) {
         		mSoundPool.play(digitResourceId, 1f, 1f, 0, 0, 1f);
         	}
@@ -399,13 +415,15 @@ public class SoundClips {
 			int lastSeconds = timeValue % 60;
 			int resouceId;
 			try {
-				playDigitSound(minutes);
-				Thread.sleep(MILLISECONDS_INTERVAL);
-				resouceId = mSoundResMap.get(R.raw.minute);
-				if(resouceId != ID_NOT_LOADED) {
-					mSoundPool.play(resouceId, 1f, 1f, 0, 0, 1f);
+				if(minutes > 0) {
+				    playDigitSound(minutes);
+				    Thread.sleep(MILLISECONDS_INTERVAL);
+				    resouceId = mSoundResMap.get(R.raw.minute);
+				    if(resouceId != ID_NOT_LOADED) {
+					    mSoundPool.play(resouceId, 1f, 1f, 0, 0, 1f);
+				    }
+				    Thread.sleep(MILLISECONDS_INTERVAL);
 				}
-				Thread.sleep(MILLISECONDS_INTERVAL);
 				playDigitSound(lastSeconds);
 				Thread.sleep(MILLISECONDS_INTERVAL);
 				resouceId = mSoundResMap.get(R.raw.second);

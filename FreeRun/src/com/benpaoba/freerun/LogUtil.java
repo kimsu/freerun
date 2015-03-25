@@ -73,10 +73,7 @@ public class LogUtil {
     }
 
     public static void info(Class clazz, String msg) {
-
-        System.out.println(clazz.getSimpleName());
-        System.out.println(msg);
-
+        Log.d(RunningMainActivity.TAG,msg);
         switch (currentStage) {
             case DEVELOP:
                 // output to the console

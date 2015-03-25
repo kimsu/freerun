@@ -26,7 +26,7 @@ public class DistanceComputeImpl implements DistanceComputeInterface{
     @Override
     public double getDistance(double lat1, double lng1, double lat2, double lng2) {
         double distance = DistanceUtil.getDistance(new LatLng(lat1, lng1),new LatLng(lat2, lng2));
-        return distance/1000;
+        return distance;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class DistanceComputeImpl implements DistanceComputeInterface{
         dy = DEF_R * (ns1 - ns2); // 南北方向长度(在经度圈上的投影长度)
         // 勾股定理求斜边长
         distance = Math.sqrt(dx * dx + dy * dy);
-        return distance/1000;
+        return distance;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class DistanceComputeImpl implements DistanceComputeInterface{
         }
         // 求大圆劣弧长度
         distance = DEF_R * Math.acos(distance);
-        return distance/1000;
+        return distance;
     }
 
     @Override

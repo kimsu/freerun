@@ -225,7 +225,7 @@ public class Utils {
      * 取double数据后面两位小数的上界
      */
     public static String getValueWith2Suffix(double dbl){
-         BigDecimal bg = new BigDecimal(dbl);
+         BigDecimal bg = new BigDecimal(dbl / 1000);
          double formatValue = bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
          return String.format("%.2f", formatValue);
     }
