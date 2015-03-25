@@ -816,16 +816,16 @@ public class RunningMainActivity extends Activity {
 			DistanceInfo distanceInfo = mDistanceInfoDao
 					.getById(RunningApplication.mRunningInfoId);
 			if (distanceInfo != null && distanceInfo.getDistance() > 0) {
-				result = Utils.getValueWith2Suffix(distanceInfo.getDistance());
+		            result = Utils.getValueWith2Suffix(distanceInfo.getDistance());
+			    double distance = distanceInfo.getDistance() / 1000;
+			    BigDecimal b = new BigDecimal(distance); 
+		    	    double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		    	    Log.d(TAG,"updateDistance, formatDistance = " + formatDistance);
+		    	    if((formatDistance > 0) && ((formatDistance * 100) % 100) == 0 && (!mSoundPlayer.isPlaying())) {
+		    	        mUpdateDisplayHandler.sendMessage(Message.obtain(mUpdateDisplayHandler, PLAY_SOUND,formatDistance));
+		    	    }
 			}
 			
-			double distance = distanceInfo.getDistance() / 1000;
-			BigDecimal b = new BigDecimal(distance); 
-	    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-	    	Log.d(TAG,"updateDistance, formatDistance = " + formatDistance);
-	    	if((formatDistance > 0) && ((formatDistance * 100) % 100) == 0 && (!mSoundPlayer.isPlaying())) {
-	    		mUpdateDisplayHandler.sendMessage(Message.obtain(mUpdateDisplayHandler, PLAY_SOUND,formatDistance));
-	    	}
 			return result;
 		}
 
