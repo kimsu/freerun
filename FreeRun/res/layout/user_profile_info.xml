@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/red"
+    android:layout_marginLeft="50dip"
+    android:orientation="vertical" >
+     
+        <LinearLayout
+            android:id="@+id/user_summary_info"
+            android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			android:orientation="horizontal" 
+			android:background="@color/white"
+			android:padding="10.0dip" >       <!-- The user summary info, Start -->
+            <RelativeLayout 
+				android:layout_gravity="center_vertical" 
+				android:orientation="vertical" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content"> 
+                <ImageView
+					android:id="@+id/img_user_avatar" 
+					android:layout_width="87.0dip" 
+					android:layout_height="87.0dip" 
+					android:src="@drawable/default_user" 
+					android:contentDescription="@string/app_name" />
+            </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/login" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" 
+				android:layout_marginLeft="20dip"
+				android:orientation="vertical" > <!--Log in text Info, Start -->
+				<FrameLayout
+					android:id="@+id/ll_edit_userinfo" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content">
+                    <TextView 
+						android:id="@+id/tv_pro_nickname" 
+						android:layout_width="wrap_content" 
+						android:layout_height="wrap_content" 
+						android:layout_gravity="left"
+						android:text="nickname" />
+                    <TextView
+                        android:id="@+id/tv_info_edit"  
+                        android:layout_width="wrap_content" 
+						android:layout_height="wrap_content"
+						android:layout_gravity="right"
+						android:textSize="16sp"
+						android:textStyle="bold" 
+						android:text="编辑" />
+                </FrameLayout>
+                <View 
+					android:background="@drawable/bg_line_normal" 
+					android:layout_width="fill_parent"
+					android:layout_height="0.5dip" 
+					android:layout_marginTop="5.0dip" />
+                <LinearLayout 
+                    android:orientation="horizontal" 
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content" 
+                    android:layout_marginTop="5.0dip">
+                    <TextView 
+                        android:id="@+id/tv_total_distance_tip" 
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:text="总里程" />
+                    <TextView 
+                        android:textStyle="bold" 
+                        android:gravity="right" 
+                        android:id="@+id/tv_total_distance" 
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" 
+                        android:text="1043.42 KM" />
+                </LinearLayout>
+                <LinearLayout 
+                    android:orientation="horizontal" 
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content" 
+                    android:layout_marginTop="5.0dip">
+                    <TextView 
+                        android:id="@+id/tv_total_time_tip" 
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content" 
+                        android:text="总时间" />
+                    <TextView 
+                        android:textStyle="bold" 
+                        android:gravity="right" 
+                        android:id="@+id/tv_total_time" 
+                        android:layout_width="fill_parent" 
+                        android:layout_height="wrap_content" 
+                        android:text="58:39:50" />
+                </LinearLayout>
+                <LinearLayout 
+                    android:orientation="horizontal" 
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content" 
+                    android:layout_marginTop="5.0dip">
+                    <TextView 
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content" 
+                        android:text="总消耗" />
+                    <TextView 
+                        android:textStyle="bold" 
+                        android:gravity="right" 
+                        android:id="@+id/tv_total_calories" 
+                        android:layout_width="fill_parent" 
+                        android:layout_height="wrap_content" 
+                        android:text="475,244 Cal" />
+                </LinearLayout>
+            </LinearLayout> <!--Log in text Info, End -->
+            <LinearLayout 
+                android:id="@+id/logout"
+                android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_gravity="center" 
+				android:layout_marginLeft="20dip"
+				android:visibility="gone"
+				android:orientation="vertical">  <!--Log out text Info, Begin -->
+                <TextView 
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="未登录"/>
+                                <TextView 
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="登录后更精彩"/>
+                
+            </LinearLayout><!--Log out text Info, End -->
+        </LinearLayout> <!-- The user summary info, End -->
+        
+        <LinearLayout 
+            android:id="@+id/the_best_record"
+            android:orientation="vertical" 
+			android:background="@color/white"
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			android:layout_marginTop="@dimen/index_line_gap"> <!-- the best score, start -->
+            <TextView 
+				android:textSize="30sp" 
+				android:textColor="@color/black" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" 
+				android:layout_marginLeft="15.0dip" 
+				android:layout_marginTop="5.0dip" 
+				android:layout_marginBottom="5.0dip" 
+				android:text="个人最佳成绩" />
+            <View 
+				android:background="@drawable/bg_line_normal" 
+				android:layout_width="fill_parent" 
+				android:layout_height="0.5dip" 
+				android:layout_marginLeft="10dip"
+				android:layout_marginRight="10dip" />
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="最快配速" />
+                <TextView 
+                    android:id="@+id/fastest_speed_match"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="最长距离" />
+                <TextView 
+                    android:id="@+id/longest_distance"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="最长时间" />
+                <TextView 
+                    android:id="@+id/longest_time"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="5公里最快时间" />
+                <TextView 
+                    android:id="@+id/shortest_time_five"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="10公里最快时间" />
+                <TextView 
+                    android:id="@+id/shortest_time_ten"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="半程马拉松最快时间" />
+                <TextView
+                    android:id="@+id/shortest_time_half_marathon" 
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+            </FrameLayout>
+            <FrameLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip">
+                <TextView
+                    style="@style/LayoutScoreItemName" 
+					android:text="全程马拉松最快时间" />
+                <TextView 
+                    android:id="@+id/shortest_time_full_marathon"
+					style="@style/LayoutSorceItemContent"
+                    android:text="无"/>
+                
+            </FrameLayout>
+        </LinearLayout> 				<!-- the best score, end -->
+        
+            <RelativeLayout 
+				android:id="@+id/run_history"
+				android:background="@color/white" 
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="18dip"> <!-- run history record, start -->
+                <TextView 
+					android:textSize="30sp" 
+					android:id="@+id/tv_record_history" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip" 
+					android:layout_centerVertical="true"
+					android:text="record_history"/>
+                <ImageView 
+					android:id="@+id/common_icon_arrow" 
+					android:background="@drawable/icon_list_arrow"
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					style="@style/LayoutBtnRightImg"
+					android:contentDescription="@string/app_name"/>
+                <TextView 
+					android:id="@+id/tv_record_history_times"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" 
+					android:layout_marginRight="10.0dip" 
+					android:layout_toLeftOf="@id/common_icon_arrow" 
+					android:layout_centerVertical="true"
+					android:textSize="15sp"
+					android:text="1 次"/>
+            </RelativeLayout> <!-- run history record, End -->        
+  
+</LinearLayout>

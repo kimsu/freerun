@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+    <RelativeLayout 
+        android:id="@+id/start_point"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="10dip" >
+        <TextView 
+        	android:id="@+id/date"
+        	android:layout_width="fill_parent"
+        	android:layout_height="fill_parent"
+        	android:layout_marginLeft="0dip"
+        	android:textSize="10sp"/>
+        <TextView 
+            android:id="@+id/time"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/date"/>        
+    </RelativeLayout>
+    <TextView 
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_toRightOf="@id/start_point"
+        android:textSize="18sp"/>
+
+    <ImageButton 
+        android:id="@+id/detail"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:paddingRight="5sp"
+        android:src="@drawable/left_back_selector"
+        android:layout_alignParentLeft="true"/>
+   <TextView 
+        android:id = "@+id/used_time"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_toLeftOf="@id/detail"
+        android:textSize="18sp"/>
+    
+    
+
+</RelativeLayout>

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
-
 /*
  * This class controls the sound playback according to the API level.
  */

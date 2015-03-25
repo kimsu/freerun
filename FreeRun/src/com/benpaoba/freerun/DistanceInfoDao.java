@@ -5,32 +5,35 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.benpaoba.freerun.database.FreeRunDatabaseHelper;
+
 public class DistanceInfoDao {
 	private SQLiteOpenHelper mOpenHelper = null;
     private SQLiteDatabase db;
 
     public DistanceInfoDao(Context context) {
-    	mOpenHelper = new DatabaseHelper(context);
+    	mOpenHelper = new FreeRunDatabaseHelper(context);
     }
 
     public void insert(DistanceInfo mDistanceInfo) {
         if (mDistanceInfo == null) {
             return;
         }
+        /**
         db = mOpenHelper.getWritableDatabase();
-        String sql = "INSERT INTO milestone(distance,longitude,latitude, usedTime) VALUES('"+ 
+        String sql = "INSERT INTO run_records(distance,longitude,latitude, usedTime) VALUES('"+ 
         mDistanceInfo.getDistance() +
         "','"+ mDistanceInfo.getLongitude() +
         "','"+ mDistanceInfo.getLatitude() +
         "','"+ mDistanceInfo.getTime() +
         "')";
         db.execSQL(sql);
-        db.close();
+        db.close();*/
     }
 
     public int getMaxId() {
         db = mOpenHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT MAX(id) as id from milestone",null);
+        Cursor cursor = db.rawQuery("SELECT MAX(_id) as id from run_records",null);
         if (cursor.moveToFirst()) {
             return cursor.getInt(cursor.getColumnIndex("id"));
         }
@@ -56,7 +59,7 @@ public class DistanceInfoDao {
      */
     public DistanceInfo getById(int id) {
         db = mOpenHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * from milestone WHERE id = ?",new String[] { String.valueOf(id) });
+        Cursor cursor = db.rawQuery("SELECT * from run_records WHERE _id = ?",new String[] { String.valueOf(id) });
         DistanceInfo mDistanceInfo = null;
         if (cursor.moveToFirst()) {
             mDistanceInfo = new DistanceInfo();
@@ -80,7 +83,7 @@ public class DistanceInfoDao {
             return;
         }
         db = mOpenHelper.getWritableDatabase();
-        String sql = "update milestone set distance=" + mDistanceInfo.getDistance() +
+        String sql = "update run_records set distance=" + mDistanceInfo.getDistance() +
         		",longitude = "+mDistanceInfo.getLongitude() + 
         		",latitude = "+mDistanceInfo.getLatitude() +
         		", usedTime = " + mDistanceInfo.getTime() + 
@@ -99,7 +102,7 @@ public class DistanceInfoDao {
             return;
         }
         db = mOpenHelper.getWritableDatabase();
-        String sql = "delete from milestone where id = " + id;
+        String sql = "delete from run_records where id = " + id;
         db.execSQL(sql);
         db.close();
     }

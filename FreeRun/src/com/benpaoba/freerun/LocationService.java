@@ -26,7 +26,7 @@ public class LocationService extends Service {
     public static final String FILE_NAME = "log.txt";
     private static final String TAG = "LocationService";
     public static final int PLAYBACKSERVICE_STATUS = 1;
-    private volatile int mSportStatus;
+    private static int mSportStatus;
     LocationClient mLocClient;
     private Object lock = new Object();
     private volatile GpsLocation mPrevGpsLocation;       //定位数据
@@ -49,8 +49,6 @@ public class LocationService extends Service {
         super.onCreate();
         Log.d(TAG,"LocationService, onCreate()");
         
-        //Notice that when service is created, we have been running and  
-        mSportStatus = SportsManager.STATUS_RUNNING;
         mDistanceInfoDao = new DistanceInfoDao(this);
         mLocationListener = new MyLocationListenner();
         mLocClient = new LocationClient(this);
@@ -68,6 +66,7 @@ public class LocationService extends Service {
         IntentFilter commandFilter = new IntentFilter();
         commandFilter.addAction(SportsManager.STATUS_ACTION);
         registerReceiver(mIntentReceiver, commandFilter);
+        
     }
 
     @Override
@@ -79,7 +78,7 @@ public class LocationService extends Service {
     	mStatus.icon = R.drawable.ic_launcher;
     	mStatus.contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this,RunningMainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), 0);
+                .addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT), 0);
         startForeground(PLAYBACKSERVICE_STATUS, mStatus);
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -91,7 +90,6 @@ public class LocationService extends Service {
             mLocClient.stop();
         }
         stopForeground(false);
-        unregisterReceiver(mIntentReceiver);
     }
 
     private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
@@ -168,12 +166,10 @@ public class LocationService extends Service {
                     discard++;
                     return null;
                 }
-               Log.d(TAG,"LocationService, call(), RunningApplication.mRunningInfoId = " +
-                        RunningApplication.mRunningInfoId + 
-                        ", status = " + mSportStatus);
+                Log.d(TAG,"LocationService, call(), RunningApplication.mRunningInfoId = " + RunningApplication.mRunningInfoId + ", status = " + mSportStatus);
                 if (RunningApplication.mRunningInfoId != -1 && mSportStatus == SportsManager.STATUS_RUNNING) {
                     DistanceInfo mDistanceInfo = mDistanceInfoDao.getById(RunningApplication.mRunningInfoId);
-                    LogUtil.info("LocationService, mDistanceInfo = " + mDistanceInfo);
+                    Log.d(TAG,"LocationService, mDistanceInfo = " + mDistanceInfo);
                     if(mDistanceInfo != null) {
                     	mCurrentGpsLocation = new GpsLocation(location.getLatitude(), location.getLongitude());
                         float addedDistance = 0.0f;
@@ -181,7 +177,7 @@ public class LocationService extends Service {
                         if(mPrevGpsLocation != null) {
                         	addedDistance = (float) distanceComputeInterface.getDistance(mPrevGpsLocation.lat,mPrevGpsLocation.lng,mCurrentGpsLocation.lat,mCurrentGpsLocation.lng);
                         }
-						LogUtil.info("LocationService(), distance = " + addedDistance + ", oldDistance = " + mDistanceInfo.getDistance());
+						Log.d(TAG, "LocationService(), distance = " + addedDistance + ", oldDistance = " + mDistanceInfo.getDistance());
 						if (addedDistance > 0) {
 							float oldDistance = mDistanceInfo.getDistance();
 							mDistanceInfo
@@ -207,7 +203,7 @@ public class LocationService extends Service {
     public class MyLocationListenner implements BDLocationListener {
         @Override
         public void onReceiveLocation(BDLocation location) {
-        	LogUtil.info("MyLocationListener, onReceiveLocation, latitude :　" + location.getLatitude() + ", longitude : " + 
+        	Log.d(TAG,"MyLocationListener, onReceiveLocation, location:  " + location.getLatitude() + " : " + 
                     location.getLongitude());
                 mExecutor.submit(new Task(location));
 
