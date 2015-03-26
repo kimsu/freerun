@@ -5,8 +5,8 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="17" />
+        android:minSdkVersion="13"
+        android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -21,6 +21,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- SDK1.5需要android.permission.GET_TASKS权限判断本程序是否为当前运行的应用? -->
     <uses-permission android:name="android.permission.GET_TASKS" />
+     <!-- 用户登录时，网络接入权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
 
     <application
@@ -32,13 +35,33 @@
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="spzmcL3MMYZre6UvY2kUV6Pq" />
+       
+        <!-- QQ 接入配置 -->
+        <activity
+			android:name="com.tencent.tauth.AuthActivity" 
+			android:noHistory="true" 
+			android:launchMode="singleTask" >
+				<intent-filter>
+					<action android:name="android.intent.action.VIEW" />
+					<category android:name="android.intent.category.DEFAULT" />
+					<category android:name="android.intent.category.BROWSABLE" />
+					<data android:scheme="tencent222222" />
+				</intent-filter>
+		</activity>
+		
+		<!-- QQ 开发SDK_V2.0后，引入了AssistActivity， 该应用的配置 -->
+        <activity 
+            android:name="com.tencent.connect.common.AssistActivity"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar"
+			android:configChanges="orientation|keyboardHidden|screenSize" 
+		/>
 
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
             android:label="@string/app_name"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:launchMode="singleTask"
-             >
+            android:launchMode="singleTask" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -65,6 +88,45 @@
             android:exported="false" >
             
         </provider>
+        
+        <activity 
+            android:name="com.benpaoba.freerun.LoginAndProfileInfo"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:launchMode="singleTop">
+            
+            <intent-filter >
+               <action android:name="com.benpaoba.freerun.CHECKPROFILEINFO"/>
+               <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            
+        </activity>
+        <activity 
+            android:name="com.benpaoba.freerun.EditUserInfo"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:launchMode="singleTop">
+            <intent-filter >
+                <action android:name="com.benpaoba.freerun.EDITUSERINFO"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity 
+            android:name="com.benpaoba.freerun.RunHistoryRecord"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:launchMode="singleTop">
+            <intent-filter >
+                <action android:name="com.benpaoba.freerun.CHECKRECORD"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity 
+            android:name="com.benpaoba.freerun.MoreSetupChoice"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:launchMode="singleTop">>
+            <intent-filter >
+                <action android:name="com.benpaoba.freerun.SETUP"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
         
     </application>
 

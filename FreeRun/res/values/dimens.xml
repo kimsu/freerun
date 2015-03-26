@@ -83,4 +83,6 @@
     <dimen name="week_compare_top_margin">15.0dip</dimen>
     <dimen name="weight_unit_paddingleft">30.0dip</dimen>
     <dimen name="wel_margin">25.0dip</dimen>
+    <dimen name="edit_user_info_entry_highth">70.0dip</dimen>
+    
 </resources>

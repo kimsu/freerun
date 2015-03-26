@@ -635,12 +635,15 @@ public class RunningMainActivity extends Activity {
 				);
 		mGpsSignalTextView.setText(gpsSinalDescription);
 		userIcon =(ImageButton)findViewById(R.id.user_icon);
-		/*
+		
 		userIcon.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-
+				Intent intent = new Intent();
+				intent.setAction(Constants.ACTION_CHECK_PROFILE_INFO);
+				startActivity(intent);
+				/*
 				RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) layout_left
 						.getLayoutParams();
 				TextView title = (TextView) findViewById(R.id.title);
@@ -653,9 +656,10 @@ public class RunningMainActivity extends Activity {
 					new AsynMove().execute(SPEED);
 					title.setVisibility(View.GONE);
 				}
+					*/
 			}
 		} );
-		*/
+	
 	}
 
 	 private class MyOnGestureListener implements OnGestureListener {

@@ -3,9 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/red"
-    android:layout_marginLeft="50dip"
     android:orientation="vertical" >
-     
         <LinearLayout
             android:id="@+id/user_summary_info"
             android:layout_width="fill_parent" 
@@ -36,16 +34,18 @@
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content">
                     <TextView 
-						android:id="@+id/tv_pro_nickname" 
+						android:id="@+id/pro_nickname" 
 						android:layout_width="wrap_content" 
 						android:layout_height="wrap_content" 
 						android:layout_gravity="left"
+						android:textColor="@color/black"
 						android:text="nickname" />
                     <TextView
-                        android:id="@+id/tv_info_edit"  
+                        android:id="@+id/info_edit"  
                         android:layout_width="wrap_content" 
 						android:layout_height="wrap_content"
 						android:layout_gravity="right"
+						android:textColor="@color/black"
 						android:textSize="16sp"
 						android:textStyle="bold" 
 						android:text="编辑" />
@@ -56,21 +56,23 @@
 					android:layout_height="0.5dip" 
 					android:layout_marginTop="5.0dip" />
                 <LinearLayout 
-                    android:orientation="horizontal" 
                     android:layout_width="fill_parent" 
                     android:layout_height="wrap_content" 
+                    android:orientation="horizontal" 
                     android:layout_marginTop="5.0dip">
                     <TextView 
                         android:id="@+id/tv_total_distance_tip" 
                         android:layout_width="wrap_content" 
                         android:layout_height="wrap_content"
+						android:textColor="@color/black"
                         android:text="总里程" />
                     <TextView 
                         android:textStyle="bold" 
                         android:gravity="right" 
-                        android:id="@+id/tv_total_distance" 
+                        android:id="@+id/total_distance" 
                         android:layout_width="fill_parent"
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" 
                         android:text="1043.42 KM" />
                 </LinearLayout>
                 <LinearLayout 
@@ -81,14 +83,16 @@
                     <TextView 
                         android:id="@+id/tv_total_time_tip" 
                         android:layout_width="wrap_content" 
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" 
                         android:text="总时间" />
                     <TextView 
                         android:textStyle="bold" 
                         android:gravity="right" 
-                        android:id="@+id/tv_total_time" 
+                        android:id="@+id/total_time" 
                         android:layout_width="fill_parent" 
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" 
                         android:text="58:39:50" />
                 </LinearLayout>
                 <LinearLayout 
@@ -98,14 +102,16 @@
                     android:layout_marginTop="5.0dip">
                     <TextView 
                         android:layout_width="wrap_content" 
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" 
                         android:text="总消耗" />
                     <TextView 
                         android:textStyle="bold" 
                         android:gravity="right" 
-                        android:id="@+id/tv_total_calories" 
+                        android:id="@+id/total_calories" 
                         android:layout_width="fill_parent" 
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" 
                         android:text="475,244 Cal" />
                 </LinearLayout>
             </LinearLayout> <!--Log in text Info, End -->
@@ -115,19 +121,19 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="center" 
 				android:layout_marginLeft="20dip"
-				android:visibility="gone"
 				android:orientation="vertical">  <!--Log out text Info, Begin -->
                 <TextView 
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:textSize="25sp"
+                    android:textColor="@color/black"
                     android:text="未登录"/>
-                                <TextView 
+                <TextView 
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
+                    android:textColor="@color/black"
                     android:text="登录后更精彩"/>
-                
             </LinearLayout><!--Log out text Info, End -->
         </LinearLayout> <!-- The user summary info, End -->
         
@@ -269,7 +275,7 @@
 					style="@style/LayoutBtnRightImg"
 					android:contentDescription="@string/app_name"/>
                 <TextView 
-					android:id="@+id/tv_record_history_times"
+					android:id="@+id/record_history_times"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content" 
 					android:layout_marginRight="10.0dip" 
@@ -277,6 +283,21 @@
 					android:layout_centerVertical="true"
 					android:textSize="15sp"
 					android:text="1 次"/>
-            </RelativeLayout> <!-- run history record, End -->        
+            </RelativeLayout> <!-- run history record, End -->  
+            
+            <RelativeLayout 
+				android:id="@+id/more_setUp"
+				android:background="@color/white" 
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="18dip"> <!-- More setup choice ..., begin. -->
+                <TextView 
+					android:textSize="30sp" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip" 
+					android:layout_centerVertical="true"
+					android:text="More ..."/>
+            </RelativeLayout> <!-- More setup choice ..., begin. -->        
   
 </LinearLayout>
