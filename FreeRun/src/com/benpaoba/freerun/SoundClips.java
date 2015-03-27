@@ -32,7 +32,7 @@ public class SoundClips {
     private boolean isPlaying = false;
     public interface Player {
         public void release();
-        public void play(int action, int totalMiles, int totalSeconds, int nearByOneMileTime);
+        public void play(int action, int totalMiles, long totalSeconds, long nearByOneMileTime);
         public boolean isPlaying();
     }
 
@@ -154,7 +154,7 @@ public class SoundClips {
         }
 
         @Override
-        public synchronized void play(final int action, final int totalMiles, final int totalSeconds, final int nearByOneMileTime) {
+        public synchronized void play(final int action, final int totalMiles, final long totalSeconds, final long nearByOneMileTime) {
             if (action < 0 || action >= mActions.length) {
                 Log.e(TAG, "Resource ID not found for action:" + action + " in play().");
                 return;
@@ -410,9 +410,9 @@ public class SoundClips {
         	}
         }
         
-		private void playTimeSound(int timeValue) {
-			int minutes = timeValue / 60;
-			int lastSeconds = timeValue % 60;
+		private void playTimeSound(long timeValue) {
+			int minutes = (int)timeValue / 60;
+			int lastSeconds = (int)timeValue % 60;
 			int resouceId;
 			try {
 				if(minutes > 0) {

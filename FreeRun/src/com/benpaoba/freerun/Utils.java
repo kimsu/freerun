@@ -315,7 +315,7 @@ public class Utils {
             android.content.DialogInterface.OnClickListener negativeBtnListener){
         Dialog dialog = null;
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setIcon(iconId);
+        //builder.setIcon(iconId);
         builder.setTitle(title);
         builder.setMessage(message);
         builder.setPositiveButton(positiveBtnName, positiveBtnListener);

@@ -16,5 +16,6 @@
     <string name="nomarl_gps">正常</string>
     <string name="bad_gps">弱</string>
     <string name="good_gps">强</string>
+    <string name="sports_details">运动轨迹</string>
 
 </resources>

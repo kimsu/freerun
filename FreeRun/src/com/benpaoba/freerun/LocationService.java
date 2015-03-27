@@ -29,8 +29,9 @@ public class LocationService extends Service {
     private volatile int mSportStatus;
     LocationClient mLocClient;
     private Object lock = new Object();
-    private volatile GpsLocation mPrevGpsLocation;       //定位数据
-    private volatile GpsLocation mCurrentGpsLocation;
+    private GpsLocation mPrevGpsLocation;       //定位数据
+    private GpsLocation mCurrentGpsLocation;
+    private double mOldDistance = 0;
     private MyLocationListenner mLocationListener;
     private volatile int discard = 1;
     
@@ -172,29 +173,30 @@ public class LocationService extends Service {
                         RunningApplication.mRunningInfoId + 
                         ", status = " + mSportStatus);
                 if (RunningApplication.mRunningInfoId != -1 && mSportStatus == SportsManager.STATUS_RUNNING) {
-                    DistanceInfo mDistanceInfo = mDistanceInfoDao.getById(RunningApplication.mRunningInfoId);
-                    LogUtil.info("LocationService, mDistanceInfo = " + mDistanceInfo);
-                    if(mDistanceInfo != null) {
+                    //DistanceInfo mDistanceInfo = mDistanceInfoDao.getById(RunningApplication.mRunningInfoId);
+                    //LogUtil.info("LocationService, mDistanceInfo = " + mDistanceInfo);
+                    //if(mDistanceInfo != null) {
                     	mCurrentGpsLocation = new GpsLocation(location.getLatitude(), location.getLongitude());
-                        float addedDistance = 0.0f;
+                        double addedDistance = 0.0f;
                         DistanceComputeInterface distanceComputeInterface = DistanceComputeImpl.getInstance();
                         if(mPrevGpsLocation != null) {
                         	addedDistance = (float) distanceComputeInterface.getShortDistance(mPrevGpsLocation.lat,mPrevGpsLocation.lng,mCurrentGpsLocation.lat,mCurrentGpsLocation.lng);
                         }
-						LogUtil.info("LocationService(), distance = " + addedDistance + ", oldDistance = " + mDistanceInfo.getDistance());
+						//LogUtil.info("LocationService(), distance = " + addedDistance + ", oldDistance = " + mDistanceInfo.getDistance());
 						if (addedDistance > 0) {
-							float oldDistance = mDistanceInfo.getDistance();
-							mDistanceInfo
-									.setDistance(addedDistance + oldDistance); //拿到数据库原始距离值，加上当前值
+							//float oldDistance = mDistanceInfo.getDistance();
+							//mDistanceInfo
+							//		.setDistance(addedDistance + oldDistance); //拿到数据库原始距离值，加上当前值
 																				
-							mDistanceInfo.setLongitude(mCurrentGpsLocation.lng); //经度
-							mDistanceInfo.setLatitude(mCurrentGpsLocation.lat); //纬度
+							//mDistanceInfo.setLongitude(mCurrentGpsLocation.lng); //经度
+							//mDistanceInfo.setLatitude(mCurrentGpsLocation.lat); //纬度
 
-							mDistanceInfoDao.updateDistance(mDistanceInfo);
+							//mDistanceInfoDao.updateDistance(mDistanceInfo);
+							
 							discard = 1;
 						}
                         mPrevGpsLocation = mCurrentGpsLocation;
-                    }
+                    //}
                 }
                 return null;
             }
