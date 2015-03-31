@@ -1,5 +1,6 @@
 package com.benpaoba.freerun;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -39,7 +41,6 @@ public class LoginAndProfileInfo extends Activity {
 	 static final String TOTALDISTANCE = "total_distance";
 	 static final String TOTALTIME = "total_time";
 	 static final String TOTALCALORIES = "total_calories";
-	 
 	 
 	
 	//The best Record
@@ -76,7 +77,8 @@ public class LoginAndProfileInfo extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_profile_info);
-		
+		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
 		
 		// Tencent类是SDK的主要实现类，开发者可通过Tencent类访问腾讯开放的OpenAPI。
 		// 其中APP_ID是分配给第三方应用的appid，类型为String。
@@ -100,6 +102,15 @@ public class LoginAndProfileInfo extends Activity {
 
 	}
 	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		if(item.getItemId() == android.R.id.home) {
+			finish();
+		    return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 	
 	private void initViews() {
 		

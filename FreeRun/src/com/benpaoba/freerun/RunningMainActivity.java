@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import android.content.ContentValues;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -28,6 +29,7 @@ import android.content.pm.ResolveInfo;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -66,6 +68,8 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.benpaoba.freerun.database.FreeRunContentProvider;
+import com.benpaoba.freerun.database.RunRecordTable;
 
 public class RunningMainActivity extends Activity {
 	public static final String TAG = "RunningMap";
@@ -202,7 +206,7 @@ public class RunningMainActivity extends Activity {
 	    // 地图初始化
 	 	mMapView = (MapView) findViewById(R.id.map_view);
 	 	mBaiduMap = mMapView.getMap();
-	 		
+	 	Log.d(TAG,"onCreate(), height: " + mMapView.getHeight());
 	 	// 开启定位图层
 	 	mBaiduMap.setMyLocationEnabled(true);
 	 	//startService(new Intent(this, LocationService.class));
@@ -314,6 +318,8 @@ public class RunningMainActivity extends Activity {
 		});
 		
 	}
+	private Uri mInsertUri = null;
+	private File mSaveFile = null;
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 			
 		@Override
@@ -344,19 +350,13 @@ public class RunningMainActivity extends Activity {
 						mRightButton.setVisibility(View.VISIBLE);
 						mLockImageButton.setVisibility(View.VISIBLE);
 						mRunningStateLayout.setVisibility(View.VISIBLE);
-						
-						DistanceInfo mDistanceInfo = new DistanceInfo();
-//						mDistanceInfo.setDistance(0f); // 距离初始值
-//						mDistanceInfo.setLongitude(RunningApplication.mLongtitude); // 经度初始值
-//						mDistanceInfo.setLatitude(RunningApplication.mLatitude); // 纬度初始值
-						int id = mDistanceInfoDao.insertAndGet(mDistanceInfo);
-						if (id != -1) {
-							RunningApplication.mRunningInfoId = id;
-							Toast.makeText(RunningMainActivity.this, "已经开始跑步...", Toast.LENGTH_SHORT).show();
-						} else {
-							Toast.makeText(RunningMainActivity.this, "id is -1,无法执行距离计算代码块", Toast.LENGTH_SHORT).show();
-						}
-						
+						ContentValues values = new ContentValues();
+						values.put(RunRecordTable.COLUMN_DATE,mStartTime);
+						mInsertUri = RunningMainActivity.this.getContentResolver().
+								insert(FreeRunContentProvider.CONTENT_URI, values);
+						Log.d("yxf","mInsertUri = " + mInsertUri);
+						mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
+								+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
 						startTimer();
 					} else {
 						new AlertDialog.Builder(RunningMainActivity.this)
@@ -398,7 +398,20 @@ public class RunningMainActivity extends Activity {
 				stopService(new Intent(RunningMainActivity.this, LocationService.class));
 				mSoundPlayer.play(SoundClips.COMPLETE_SPORT,0,0,0);
 				cancelTimer();
-				savePointsToFiles(mPointLists);
+				
+				ContentValues values = new ContentValues();
+				values.put(RunRecordTable.COLUMN_DATE,mStartTime);
+				values.put(RunRecordTable.COLUMN_USEDTIME,mCurrentIndividualStatusSeconds);
+				values.put(RunRecordTable.COLUMN_DISTANCE,mCurrentDistance);
+				Log.d(TAG,"click ,add to databases");
+
+				RunningMainActivity.this.getContentResolver().update(mInsertUri,
+						values,
+						RunRecordTable.COLUMN_USEDTIME + "=? AND "
+		                        + RunRecordTable.COLUMN_DISTANCE + "=?",
+		                        new String[] { String.valueOf(mCurrentIndividualStatusSeconds),
+		                			    String.valueOf(mCurrentDistance)}
+						);
 //				if(mCurrentDistance < 10) {
 //					Utils.createConfirmDialog(RunningMainActivity.this,
 //							R.drawable.btn_green_mini, "提示", "你的跑步距离太短，请重新运动一会儿后再点击结束！",
@@ -406,18 +419,17 @@ public class RunningMainActivity extends Activity {
 //				            null,
 //				            null).show();
 //				} else {
+				
+				Log.d("yxf","saveFile : " + mSaveFile.getAbsolutePath());
+				savePointsToFiles(mPointLists, mSaveFile);
 				Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
+				intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
 				intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
 				intent.putExtra("total_distance",mCurrentDistance);
 				intent.putExtra("start_time",mStartTime);
 				startActivity(intent);
 //				}
-                DistanceInfo distanceInfo = mDistanceInfoDao.getById(RunningApplication.mRunningInfoId);
-//                if(distanceInfo != null) {
-//                	distanceInfo.setTime(mCurrentIndividualStatusSeconds);
-//                	mDistanceInfoDao.updateDistance(distanceInfo);
-//                }
-                
+				
 				mSportStatus = SportsManager.STATUS_READY;
 				mMiddleButton.setText(R.string.status_start);
 				mRightButton.setVisibility(View.INVISIBLE);
@@ -431,13 +443,13 @@ public class RunningMainActivity extends Activity {
 				    mViewRunControllerLayout.setVisibility(View.GONE);
 				    mOtherDetailsLayout.setVisibility(View.GONE);
 				    configOrientalOrHorizontalLayout(true);
-				    mMapView.invalidate();
+				    Log.d(TAG,"bmap onclick, height: " + mMapView.getHeight());
 				    mIsBaiduMapFullScreen = true;
 				}else {
 					mViewRunControllerLayout.setVisibility(View.VISIBLE);
 				    mOtherDetailsLayout.setVisibility(View.VISIBLE);
 				    configOrientalOrHorizontalLayout(false);
-				    mMapView.invalidate();
+				    Log.d(TAG,"bmap onclick, height: " + mMapView.getHeight());
 				    mIsBaiduMapFullScreen = false;
 				}
 			default:
@@ -482,6 +494,7 @@ public class RunningMainActivity extends Activity {
 		}
 	}
 	
+	private BDLocation mLocation;
 	/**
 	 * 定位SDK监听函数
 	 */
@@ -500,21 +513,18 @@ public class RunningMainActivity extends Activity {
 			if (location == null || mMapView == null) {
 				return;
 			}
+			mLocation = location;
 			MyLocationData locData = new MyLocationData.Builder()
 					.accuracy(location.getRadius())
 					// 此处设置开发者获取到的方向信息，顺时针0-360
 					.direction(100).latitude(location.getLatitude())
 					.longitude(location.getLongitude()).build();
 			mBaiduMap.setMyLocationData(locData);
-			if(mIsFirstLoc) {
-				mIsFirstLoc = false;
-			    LatLng ll = new LatLng(location.getLatitude(),
-				    	location.getLongitude());
-			    MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,
-					    DEFAULT_ZOOM_LEVEL);
-			    mBaiduMap.animateMapStatus(u);
-			}
-
+			    mIsFirstLoc = false;
+				LatLng ll = new LatLng(location.getLatitude(),
+			            location.getLongitude());
+				MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, DEFAULT_ZOOM_LEVEL);
+				mBaiduMap.animateMapStatus(u);
 			// draw the sports path
 			if (mSportStatus == SportsManager.STATUS_RUNNING && 
 					(location.getLocType() == BDLocation.TypeGpsLocation ||
@@ -553,7 +563,6 @@ public class RunningMainActivity extends Activity {
 	private GpsLocation mPrevGpsLocation;
 	private double mCurrentDistance;
 	private List<LatLng> mPointLists = new ArrayList<LatLng>();
-	private File mDataFile;
 	private DataOutputStream mOutPut;
 	
 	private class PointsRecordTask implements Callable<String>{
@@ -601,7 +610,7 @@ public class RunningMainActivity extends Activity {
 			    mPointLists.add(new LatLng(mLocation.getLatitude(), mLocation.getLongitude()));
 			    if(mCurrentIndividualStatusSeconds % SAVA_FILE_INTERVALS == 0) {
 			        //Write to file
-				    savePointsToFiles(mPointLists);
+				    savePointsToFiles(mPointLists,mSaveFile);
 				    mPointLists.clear();
 			    }
 			}
@@ -609,14 +618,14 @@ public class RunningMainActivity extends Activity {
 		}
 	}
 	
-	private void savePointsToFiles(List<LatLng> lists) {
-		mDataFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE);
+	private void savePointsToFiles(List<LatLng> lists, File fileName) {
+		Log.d("yxf","saveFile(), fileName = " + fileName);
 		if (Utils.isSDcardExist() && (Utils.getSDFreeSize() > 10)) {
              try {
-            	 if (!mDataFile.exists()) {
-	                 mDataFile.createNewFile();
+            	 if (!fileName.exists()) {
+	                 fileName.createNewFile();
 	             }
-                 mOutPut = new DataOutputStream(new FileOutputStream(mDataFile,true));
+                 mOutPut = new DataOutputStream(new FileOutputStream(fileName,true));
                  for(LatLng point : lists) {
                      if(mOutPut != null) {
                     	 mOutPut.writeDouble(point.latitude);
@@ -744,10 +753,12 @@ public class RunningMainActivity extends Activity {
 	}
 
 	
+	
 	@Override
 	protected void onResume() {
 		mMapView.onResume();
 		super.onResume();
+		Log.d(TAG,"onResume, height: " + mMapView.getHeight());
 		mSoundPlayer = SoundClips.getPlayer(this);
 		String gpsSinalDescription = String.format(
 				getResources().getString(R.string.gps_signal_text),

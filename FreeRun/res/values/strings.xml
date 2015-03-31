@@ -10,4 +10,5 @@
     <string name="status_continue">继续</string>
     <string name="title_activity_walking_process">WalkingProcess</string>
 	<string name="nothing"></string>
+	<string name="image_arrow">Arrow image</string>
 </resources>

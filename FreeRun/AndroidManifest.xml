@@ -31,7 +31,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Light.NoTitleBar" >
+ >
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="spzmcL3MMYZre6UvY2kUV6Pq" />
@@ -59,8 +59,8 @@
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
             android:label="@string/app_name"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:launchMode="singleTask" >
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -79,8 +79,8 @@
             android:name="com.benpaoba.freerun.LocationService"
             />
         <activity
-            android:name="com.benpaoba.freerun.WalkingProcess"
-            android:label="@string/title_activity_walking_process" >
+            android:name="com.benpaoba.freerun.HistoryDetailsActivity"
+            android:label="@string/sports_details" >
         </activity>
         <provider 
             android:name=".database.FreeRunContentProvider"
@@ -90,9 +90,7 @@
         </provider>
         
         <activity 
-            android:name="com.benpaoba.freerun.LoginAndProfileInfo"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:launchMode="singleTop">
+            android:name="com.benpaoba.freerun.LoginAndProfileInfo">
             
             <intent-filter >
                <action android:name="com.benpaoba.freerun.CHECKPROFILEINFO"/>
@@ -111,8 +109,7 @@
         </activity>
         <activity 
             android:name="com.benpaoba.freerun.RunHistoryRecord"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:launchMode="singleTop">
+            android:label="@string/history_record">
             <intent-filter >
                 <action android:name="com.benpaoba.freerun.CHECKRECORD"/>
                 <category android:name="android.intent.category.DEFAULT"/>

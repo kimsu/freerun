@@ -6,6 +6,7 @@ import java.util.HashSet;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.ContentUris;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +16,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class FreeRunContentProvider extends ContentProvider {
-	private final String TAG = "TodoItem";
+	private final String TAG = "RunningMap";
 	//database
 	private FreeRunDatabaseHelper database;
 	
@@ -88,7 +89,7 @@ public class FreeRunContentProvider extends ContentProvider {
 	
 	@Override 
 	public Uri insert(Uri uri, ContentValues values) {
-		Log.d(TAG, "MyTodoContentProvider: insert()" + " Uri: " + uri.toString());
+		
 		int uriType = sURIMatcher.match(uri);
 		SQLiteDatabase sqlDB = database.getReadableDatabase();
 		int rowsDeleted = 0;
@@ -100,8 +101,10 @@ public class FreeRunContentProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI" + uri);
 		}
+		Log.d(TAG, "MyTodoContentProvider: insert()" + " Uri: " + uri.toString() + ", id = " + id);
 		getContext().getContentResolver().notifyChange(uri, null);
-		return Uri.parse(BASE_PATH + "/" + id);
+		return ContentUris.withAppendedId(CONTENT_URI, id);
+		
 	}
 	
 	@Override
@@ -156,7 +159,7 @@ public class FreeRunContentProvider extends ContentProvider {
 			} else {
 				rowsUpdated = sqlDB.update(RunRecordTable.TABLE_RUN_RECORD,
 						values, 
-						RunRecordTable.COLUMN_ID + "=" + id + "and" + selection, 
+						RunRecordTable.COLUMN_ID + "=" + id + " and " + selection, 
 						selectionArgs);
 			}
 			break;
@@ -168,7 +171,7 @@ public class FreeRunContentProvider extends ContentProvider {
 	}
 	private void checkColumns(String [] projection) {
 		String[] available = {RunRecordTable.COLUMN_ID,
-				RunRecordTable.COLUMN_DATA,
+				RunRecordTable.COLUMN_DATE,
 				RunRecordTable.COLUMN_DISTANCE,
 				RunRecordTable.COLUMN_ST,
 				RunRecordTable.COLUMN_USEDTIME};

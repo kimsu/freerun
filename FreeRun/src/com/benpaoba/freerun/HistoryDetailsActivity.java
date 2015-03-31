@@ -33,11 +33,14 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class HistoryDetailsActivity extends Activity implements
 		OnGetGeoCoderResultListener {
+	private static final String TAG = "HistoryDetails";
 	private MapView mMapView;
 	private BaiduMap mBaiduMap;
 	private List<LatLng> mPointLists;
@@ -50,6 +53,7 @@ public class HistoryDetailsActivity extends Activity implements
 	private long mStartTime;
 	private long mTotalTime;
 	private double mTotalDistance;
+	private int mId;
 	
 	private TextView mTimeTextView;
 	private TextView mTotalTimeTextView;
@@ -63,10 +67,10 @@ public class HistoryDetailsActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setDisplayShowHomeEnabled(true);
 		setContentView(R.layout.activity_sportdetais);
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
+        	mId = bundle.getInt("_id");
             mTotalTime = bundle.getLong("total_time");
             mTotalDistance = bundle.getDouble("total_distance");
             mStartTime = bundle.getLong("start_time");
@@ -87,13 +91,13 @@ public class HistoryDetailsActivity extends Activity implements
         updateDetails(mTotalDistance, mTotalTime);
 		// 初始化地图
 		mMapView = (MapView) findViewById(R.id.map_view);
-		Log.d("yxf","mMapView.getX() = " + mMapView.getX() + ", mMapView.getY() = " + 
-		        mMapView.getY());
+		
+		mMapView.setVisibility(View.VISIBLE);
 		mBaiduMap = mMapView.getMap();
 		mBaiduMap.clear();
 		mSearch = GeoCoder.newInstance();
 		mDataFile = new File(SportsManager.POINTS_DIR,
-				SportsManager.POINTS_FILE);
+				SportsManager.POINTS_FILE + mId + SportsManager.SUFFIX);
 		mPointLists = (ArrayList<LatLng>) readPointsFromFile();
 		if(mPointLists != null && mPointLists.size() > 1 ) {
 		    mStartPoint = mPointLists.get(0);
@@ -118,6 +122,17 @@ public class HistoryDetailsActivity extends Activity implements
     	mAverageSpeedTextView.setText(String.valueOf(formatSpeed));
     	mPaceSpeedTextView.setText(TimeFormatHelper.formatTime((int)paceSpeed));
     }
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		final int id = item.getItemId();
+		if(id == android.R.id.home) {
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 	
 	private List<LatLng> readPointsFromFile() {
 		boolean flag = true;
@@ -192,14 +207,12 @@ public class HistoryDetailsActivity extends Activity implements
 	@Override
 	public void onGetGeoCodeResult(GeoCodeResult result) {
 		// TODO Auto-generated method stub
-		Log.d("yxf","onGetGeoCodeResult = " + result);
 		return;
 	}
 
 	@Override
 	public void onGetReverseGeoCodeResult(ReverseGeoCodeResult result) {
 		// TODO Auto-generated method stub
-		Log.d("yxf","onGetReverseGeoCodeResult = " + result);
 		if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
 			Toast.makeText(HistoryDetailsActivity.this, "抱歉，未能找到结果",
 					Toast.LENGTH_LONG).show();

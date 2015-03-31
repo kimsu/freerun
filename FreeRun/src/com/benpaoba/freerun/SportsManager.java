@@ -11,7 +11,8 @@ public class SportsManager {
 	public final static String POINTS_DIR = Environment.getExternalStorageDirectory().
 			 getAbsolutePath() + "/sportsData/";
 	
-	public final static String POINTS_FILE = "sports1.txt";
+	public final static String POINTS_FILE = "sports";
+	public final static String SUFFIX = ".dat";
 	public final static int STATUS_INITIAL = 1 << 0 ;
 	public final static int STATUS_READY = 1 << 1;
 	public final static int STATUS_RUNNING = 1 << 2;
