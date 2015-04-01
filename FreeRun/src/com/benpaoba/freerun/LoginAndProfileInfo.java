@@ -1,30 +1,47 @@
 package com.benpaoba.freerun;
 
-import android.app.ActionBar;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import org.json.JSONException;
+import org.json.JSONObject;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
+import com.tencent.connect.UserInfo;
+import com.tencent.connect.common.Constants;
+import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
+import com.tencent.tauth.UiError;
 
+@SuppressLint("HandlerLeak")
 public class LoginAndProfileInfo extends Activity {
 	private final String TAG = "FreeRun";
 	
 	private boolean logState = false;
 	
 	private AlertDialog alert;
-	private Tencent mTencent;
+	public  static Tencent mTencent;
+	
 	//the simple User Info
 	private LinearLayout userSummaryInfo;
 	private ImageView  userIcon;
@@ -37,10 +54,12 @@ public class LoginAndProfileInfo extends Activity {
 	private TextView totalCalories;
 	
 	// total info item for preference
+	 static final String LOGSTATE = "log_state";
 	 static final String NICKNAME = "nickname";
 	 static final String TOTALDISTANCE = "total_distance";
 	 static final String TOTALTIME = "total_time";
 	 static final String TOTALCALORIES = "total_calories";
+	 
 	 
 	
 	//The best Record
@@ -57,6 +76,8 @@ public class LoginAndProfileInfo extends Activity {
 	private TextView historyTimes;
 	
 	static final String HISTORYTIMES = "run_history_times";
+
+	protected static final String ICON = "user_icon";
 	//More setup Choice
 	private RelativeLayout moreSetup;
 	
@@ -69,30 +90,123 @@ public class LoginAndProfileInfo extends Activity {
 	private final String SHORTESTTIME_HM = "shortestTimeHalfMarathon";
 	private final String SHORTESTTIME_FM = "shortestTimeFullMarathon";
 	
-	public final String PROFILE_INFO_PREFERENCES = "user_profile_info_preference"; 
+	 
 	
-	private SharedPreferences bestHistoryRecordPreference;
+	private SharedPreferences loginDataPreference;
+	
+	private UserInfo mInfo;
+
+	private ImageView userIconDefault;
+	private static String path;
+	private AlertDialog.Builder builder;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_profile_info);
-		ActionBar actionBar = getActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		
-		// Tencent类是SDK的主要实现类，开发者可通过Tencent类访问腾讯开放的OpenAPI。
-		// 其中APP_ID是分配给第三方应用的appid，类型为String。
-		//mTencent = Tencent.createInstance(APP_ID, this.getApplicationContext());
-		// 1.4版本:此处需新增参数，传入应用程序的全局context，可通过activity的getApplicationContext方法获取
+		loginDataPreference = getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
+				Context.MODE_PRIVATE);
+		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this.getApplicationContext());
+		path = this.getCacheDir().getPath();
+		logState = loginDataPreference.getBoolean(LOGSTATE, false);
 		// 初始化视图
+		
 		initViews();
 		
+		// show Login dialog
+		userSummaryInfo.setOnClickListener(new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+				// TODO Auto-generated method stub
+			//Login Dialog 
+			builder = new AlertDialog.Builder(LoginAndProfileInfo.this);
+			if(false == logState) {
+				builder.setMessage("Do you want to login ?")
+				   .setCancelable(false)
+				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int id) {
+				        	Log.d(TAG, "\n======  LONIN START  ============");
+					            	logState = true;
+					    			loginDataPreference
+					            	.edit()
+					            		.putBoolean(LOGSTATE, true)
+					            			.commit();
+					    			login();
+					           }
+					     })
+					.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.dismiss();
+							
+							}
+						});
+			} else {
+				builder.setMessage("Do you want to Logout ?")
+				   .setCancelable(false)
+				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int id) {
+				        	Log.d(TAG, "\n======  LOGOUT END  ============");
+							logout();
+							logState = false;
+							loginDataPreference
+			            	.edit()
+			            		.putBoolean(LOGSTATE, false)
+			            			.commit();
+							handleLogin();
+							dialog.cancel();
+					      }
+					 })
+					.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+						}
+					});
+				
+			}
+			
+			builder.create()
+					.show();
+				 //alert = builder.create();
+				 //alert.show();
+		}
+		});
 		
-		bestHistoryRecordPreference = getSharedPreferences(PROFILE_INFO_PREFERENCES, Context.MODE_PRIVATE);
-		logState = bestHistoryRecordPreference.getBoolean("LOGSTATE", false);
+		//Enter Edit user Info Activity
+		editInfo.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent();
+				intent.setAction(FreeRunConstants.ACTION_EDIT_USER_INFO);
+				startActivity(intent);
+			}
+		});
 		
-
+		//Enter check history record Activity
+		checkHistoryRecord.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent();
+				intent.setAction(FreeRunConstants.ACTION_CHECK_RECORD);
+				startActivity(intent);
+			}
+		});
 		
+		//Enter More setup choice Activity
+		moreSetup.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent();
+				intent.setAction(FreeRunConstants.ACTION_SETUP);
+				startActivity(intent);
+			}
+		});
 		
 	}
 	@Override
@@ -102,20 +216,12 @@ public class LoginAndProfileInfo extends Activity {
 
 	}
 	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-		if(item.getItemId() == android.R.id.home) {
-			finish();
-		    return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
 	
 	private void initViews() {
 		
 		userSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
 		userIcon = (ImageView)findViewById(R.id.img_user_avatar);
+		userIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
 		login = (LinearLayout)findViewById(R.id.login);
 		logout = (LinearLayout)findViewById(R.id.logout);
 		editInfo = (TextView)findViewById(R.id.info_edit);
@@ -139,115 +245,63 @@ public class LoginAndProfileInfo extends Activity {
 		
 		//More setup
 		moreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
-		
 		handleLogin();			
-		
-		//Login Dialog 
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Do you want to login ?")
-			   .setCancelable(false)
-			   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int id) {
-				            logState = true;
-				               handleLogin();
-				           }
-				     })
-				.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						logState = false;
-						handleLogin();
-						dialog.cancel();
-						}
-					});
-			 alert = builder.create();
-		// show Login dialog
-		userSummaryInfo.setOnClickListener(new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-				// TODO Auto-generated method stub
-				alert.show();
-		}
-		});
-		
-		//Enter Edit user Info Activity
-		editInfo.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent();
-				intent.setAction(Constants.ACTION_EDIT_USER_INFO);
-				startActivity(intent);
-			}
-		});
-		
-		//Enter check history record Activity
-		checkHistoryRecord.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent();
-				intent.setAction(Constants.ACTION_CHECK_RECORD);
-				startActivity(intent);
-			}
-		});
-		
-		//Enter More setup choice Activity
-		moreSetup.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent();
-				intent.setAction(Constants.ACTION_SETUP);
-				startActivity(intent);
-			}
-		});
+
 	}
 
 	private void handleLogin()
 	{ 
 		
-		
 		if(logState) {
+			Log.d(TAG, "Login .......");
 			//userIcon.setImageResource(R.id.user_icon);
 			logout.setVisibility(View.GONE);
 			login.setVisibility(View.VISIBLE);
 			
 			//user simple Info
+			{
+				userIconDefault.setVisibility(View.GONE);
+				userIcon.setVisibility(View.VISIBLE);
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inSampleSize = 1;
+				Bitmap bm = BitmapFactory.decodeFile(path + "/" + ICON, options);
+				userIcon.setImageBitmap(bm);
+			}
 			userNickname.setText(
-					bestHistoryRecordPreference.getString(NICKNAME, "superman"));
+					loginDataPreference.getString(NICKNAME, "Vistor"));
 			totalDistance.setText(
-					bestHistoryRecordPreference.getString(TOTALDISTANCE, "none"));
+					loginDataPreference.getString(TOTALDISTANCE, "none"));
 			totalTime.setText(
-					bestHistoryRecordPreference.getString(TOTALTIME, "none"));
+					loginDataPreference.getString(TOTALTIME, "none"));
 			totalCalories.setText(
-					bestHistoryRecordPreference.getString(TOTALCALORIES, "none"));
-			
+					loginDataPreference.getString(TOTALCALORIES, "none"));
 			
 			//the best Record
 			fastestSpeedMatch.setText(
-					bestHistoryRecordPreference.getString(SPEEDMATCH, "nothing"));
+					loginDataPreference.getString(SPEEDMATCH, "nothing"));
 			longestDistance.setText(
-					bestHistoryRecordPreference.getString(LONGESTDISTANCE, "nothing"));
+					loginDataPreference.getString(LONGESTDISTANCE, "nothing"));
 			longestTime.setText(
-					bestHistoryRecordPreference.getString(LONGESTTIME, "nothing"));
+					loginDataPreference.getString(LONGESTTIME, "nothing"));
 			shortestTimeFive.setText(
-					bestHistoryRecordPreference.getString(SHORTESTTIME_5, "nothing"));
+					loginDataPreference.getString(SHORTESTTIME_5, "nothing"));
 			shortestTimeTen.setText(
-					bestHistoryRecordPreference.getString(SHORTESTTIME_10, "nothing"));
+					loginDataPreference.getString(SHORTESTTIME_10, "nothing"));
 			shortestTimeHalfMarathon.setText(
-					bestHistoryRecordPreference.getString(SHORTESTTIME_HM, "nothing"));
+					loginDataPreference.getString(SHORTESTTIME_HM, "nothing"));
 			shortestTimeFullMarathon.setText(
-					bestHistoryRecordPreference.getString(SHORTESTTIME_FM, "nothing"));
+					loginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
 		
 			//the history run times
 			historyTimes.setText(
-					bestHistoryRecordPreference.getInt(HISTORYTIMES, 0) + "次");
+					loginDataPreference.getInt(HISTORYTIMES, 0) + "次");
 		} else {
+			Log.d(TAG, "Logout......");
 			login.setVisibility(View.GONE);
 			logout.setVisibility(View.VISIBLE);
+			userIcon.setVisibility(View.GONE);
+			userIconDefault.setVisibility(View.VISIBLE);
+			
 		}
 		
 	}
@@ -255,16 +309,18 @@ public class LoginAndProfileInfo extends Activity {
 	/**
 	 *  调用QQ登录接口
 	 * **/
-	/*
+	
 	public void login()
 	{
-		mTencent = Tencent.createInstance(AppId, this.getApplicationContext());
+		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this);
+		Log.d(TAG, "Login(): mTencent.isSessionVaild = " + mTencent.isSessionValid() + 
+				   "\n isReady = " + mTencent.isReady());
 		if (!mTencent.isSessionValid())
 		{
-			mTencent.login(this, Scope, listener);
+			mTencent.login(this, "all", loginListener);
 		}
-	}
-	*/
+	} 
+	
 	/**
 	 * 调用QQ注销接口
 	 * */
@@ -272,6 +328,119 @@ public class LoginAndProfileInfo extends Activity {
 	{
 		mTencent.logout(this);
 	}
+	
+	private void updateUserInfo() {
+		Log.d(TAG, "LoginAndProfileInfo: updateUserInfo() " + " isSessionValid = " + mTencent.isSessionValid());
+		if (mTencent != null && mTencent.isSessionValid()) {
+			IUiListener listener = new IUiListener() {
+
+				@Override
+				public void onError(UiError e) {
+
+				}
+
+				@Override
+				public void onComplete(final Object response) {
+					Log.d(TAG, "LoginAndProfileInfo: UpdateUserInfo: updateUserInfo: onComplete()");
+					Message msg = new Message();
+					msg.obj = response;
+					msg.what = 0;
+					mHandler.sendMessage(msg);
+					new Thread(){
+						
+						@Override
+						public void run() {
+							Log.d(TAG, "====> run()");
+							JSONObject json = (JSONObject)response;
+							if(json.has("figureurl")){
+								Bitmap bitmap = null;
+								try {
+									bitmap = Utils.getbitmap(json.getString("figureurl_qq_2"));
+								} catch (JSONException e) {
+
+								}
+								Message msg = new Message();
+								msg.obj = bitmap;
+								msg.what = 1;
+								mHandler.sendMessage(msg);
+							}
+						}
+
+					}.start();
+				}
+
+				@Override
+				public void onCancel() {
+
+				}
+			};
+			mInfo = new UserInfo(this, mTencent.getQQToken());
+			mInfo.getUserInfo(listener);
+			//show the user personal login info.
+        	handleLogin();
+
+		} else {
+			Log.d(TAG, "isSessionVaild =false, Don't Login." );
+			userNickname.setText("");
+			userNickname.setVisibility(android.view.View.GONE);
+			userIcon.setVisibility(android.view.View.GONE);
+		}
+	}
+
+	Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.what == 0) {
+				JSONObject response = (JSONObject) msg.obj;
+				if (response.has("nickname")) {
+					try {
+						userNickname.setText(response.getString("nickname"));
+						loginDataPreference
+						.edit()
+						.putString(NICKNAME, response.getString("nickname"))
+						.commit();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if(msg.what == 1){
+				Bitmap bitmap = (Bitmap)msg.obj;
+				userIcon.setImageBitmap(bitmap);
+				if(bitmap != null ) {
+					Log.d(TAG, bitmap.toString());
+				}else {
+					Log.e(TAG, "bitmap is null");
+				}
+				
+				
+				try {
+					saveBitmapToFile(bitmap, path + "/" + ICON);
+				}catch(IOException e) {
+					Log.e(TAG, "==>Error: " + e.getMessage());
+					e.printStackTrace();
+				}
+				
+			}
+		}
+
+	};
+	
+	protected void onResume() {
+		super.onResume();
+		//user simple Info
+		{
+			userIconDefault.setVisibility(View.GONE);
+			userIcon.setVisibility(View.VISIBLE);
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			options.inSampleSize = 1;
+			Bitmap bm = BitmapFactory.decodeFile(path + "/" + ICON, options);
+			userIcon.setImageBitmap(bm);
+		}
+		
+	}
+	
+	
+	
 	
 	
 	/**
@@ -281,101 +450,126 @@ public class LoginAndProfileInfo extends Activity {
 	 * **/
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	mTencent.onActivityResult(requestCode, resultCode, data);
+	    Log.d(TAG, "onActivityResult: requestCode= " + requestCode  + " resultCode=" + resultCode);
+	    if(requestCode == Constants.REQUEST_API) {
+	        if(resultCode == Constants.RESULT_LOGIN) {
+	            Tencent.handleResultData(data, loginListener);
+	            Log.d(TAG, "onActivityResult handle logindata");
+	        }
+	    } else if (requestCode == Constants.REQUEST_APPBAR) { //app内应用吧登录
+	    	if (resultCode == Constants.RESULT_LOGIN) {
+	    		updateUserInfo();
+	            //updateLoginButton();
+	            Utils.showResultDialog(LoginAndProfileInfo.this, data.getStringExtra(Constants.LOGIN_INFO), "登录成功");
+	    	}
+	    }
+	    super.onActivityResult(requestCode, resultCode, data);
+	}
+	
+	// 调用SDK已经封装好的接口时，例如：登录、快速支付登录、应用分享、应用邀请等接口，需传入该回调的实例。
+	
+	public static void initOpenidAndToken(JSONObject jsonObject) {
+        try {
+            String token = jsonObject.getString(Constants.PARAM_ACCESS_TOKEN);
+            String expires = jsonObject.getString(Constants.PARAM_EXPIRES_IN);
+            String openId = jsonObject.getString(Constants.PARAM_OPEN_ID);
+            if (!TextUtils.isEmpty(token) && !TextUtils.isEmpty(expires)
+                    && !TextUtils.isEmpty(openId)) {
+                mTencent.setAccessToken(token, expires);
+                mTencent.setOpenId(openId);
+            }
+        } catch(Exception e) {
+        }
+    }	
+	
+	IUiListener loginListener = new BaseUiListener() {
+        @Override
+        protected void doComplete(JSONObject values) {
+        	Log.d(TAG, "BaseUiListener: doComplete(), SDKQQAgentPref, AuthorSwitch_SDK:" + SystemClock.elapsedRealtime());
+            initOpenidAndToken(values);
+            updateUserInfo();
+            //updateLoginButton();
+        }
+    };
+
+	private class BaseUiListener implements IUiListener {
+		
+		@Override
+		public void onComplete(Object response) {
+            Log.d(TAG, "BaseUiListener: onComplete()");
+			if (null == response) {
+                Utils.showResultDialog(LoginAndProfileInfo.this, "返回为空", "登录失败");
+                return;
+            }
+            JSONObject jsonResponse = (JSONObject) response;
+            if (null != jsonResponse && jsonResponse.length() == 0) {
+                Utils.showResultDialog(LoginAndProfileInfo.this, "返回为空", "登录失败");
+                return;
+            }
+			Utils.showResultDialog(LoginAndProfileInfo.this, response.toString(), "登录成功");
+            // 有奖分享处理
+            // handlePrizeShare();
+			doComplete((JSONObject)response);
+		}
+
+		protected void doComplete(JSONObject values) {
+
+		}
+
+		@Override
+		public void onError(UiError e) {
+			Utils.toastMessage(LoginAndProfileInfo.this, "onError: " + e.errorDetail);
+			//Utils.dismissDialog();
+		}
+
+		@Override
+		public void onCancel() {
+			Utils.toastMessage(LoginAndProfileInfo.this, "onCancel: ");
+			//Utils.dismissDialog();
+		}
 	}
 	
 	/**
-	 * 调用SDK已经封装好的接口时，例如：登录、快速支付登录、应用分享、应用邀请等接口，需传入该回调的实例。
-	 * */
-	/**
-	private class BaseUiListener implements IUiListener {
-	
-		登录成功后调用public void onComplete(JSONObject arg0) 回传的JsonObject， 其中包含OpenId， AccessToken等重要数据。
-		{
-			"ret":0,
-			"pay_token":"xxxxxxxxxxxxxxxx",
-			"pf":"openmobile_android",
-			"expires_in":"7776000",
-			"openid":"xxxxxxxxxxxxxxxxxxx",
-			"pfkey":"xxxxxxxxxxxxxxxxxxx",
-			"msg":"sucess",
-			"access_token":"xxxxxxxxxxxxxxxxxxxxx"
-		}
-	
-		@Override
-		public void onComplete(JSONObject response) {
-		mBaseMessageText.setText("onComplete:");
-		mMessageText.setText(response.toString());
-		doComplete(response);
-		}
-		protected void doComplete(JSONObject values) {
-		}
-		@Override
-		public void onError(UiError e) {
-		showResult("onError:", "code:" + e.errorCode + ", msg:"
-		+ e.errorMessage + ", detail:" + e.errorDetail);
-		}
-		@Override
-		public void onCancel() {
-		showResult("onCancel", "");
-		}
-		}
-	
-	**/
-	
-	/***
-	 * 使用requestAsync、request等通用方法调用sdk未封装的接口时，例如上传图片、查看相册等，需传入该回调的实例。
-	 * IRequestListener的实现示例代码如下：
-	 * 
-	 * **/
-	/**
-	private class BaseApiListener implements IRequestListener {
-		@Override
-		public void onComplete(final JSONObject response, Object state) {
-		showResult("IRequestListener.onComplete:", response.toString());
-		doComplete(response, state);
-		}
-		protected void doComplete(JSONObject response, Object state) {
-		}
-		@Override
-		public void onIOException(final IOException e, Object state) {
-		showResult("IRequestListener.onIOException:", e.getMessage());
-		}
-		@Override
-		public void onMalformedURLException(final MalformedURLException e,
-		Object state) {
-		showResult("IRequestListener.onMalformedURLException", e.toString());
-		}
-		@Override
-		public void onJSONException(final JSONException e, Object state) {
-		showResult("IRequestListener.onJSONException:", e.getMessage());
-		}
-		@Override
-		public void onConnectTimeoutException(ConnectTimeoutException arg0,
-		Object arg1) {
-		// TODO Auto-generated method stub
-		}
-		@Override
-		public void onSocketTimeoutException(SocketTimeoutException arg0,
-		Object arg1) {
-		// TODO Auto-generated method stub
-		}
-		//1.4版本中IRequestListener 新增两个异常
-		@Override
-		public void onNetworkUnavailableException(NetworkUnavailableException e, Object state){
-		// 当前网络不可用时触发此异常
-		}
-		@Override
-		public void onHttpStatusException(HttpStatusException e, Object state) {
-		// http请求返回码非200时触发此异常
-		}
-		public void onUnknowException(Exception e, Object state) {
-		// 出现未知错误时会触发此异常
-		}
-		}
-    **/
-	
-	
+     * Save Bitmap to a file.保存图片到SD卡。
+     * 
+     * @param bitmap
+     * @param file
+     * @return error message if the saving is failed. null if the saving is
+     *         successful.
+     * @throws IOException
+     */
+    public  void saveBitmapToFile(Bitmap bitmap, String _file)
+            throws IOException {
+    	Log.d(TAG, "LoginAndProfileInfo: saveBitmapToFile()");
+        BufferedOutputStream os = null;
+        try {
+            File file = new File(_file);
+            // String _filePath_file.replace(File.separatorChar +
+            // file.getName(), "");
+            int end = _file.lastIndexOf(File.separator);
+            String _filePath = _file.substring(0, end);
+            File filePath = new File(_filePath);
+            if (!filePath.exists()) {
+                filePath.mkdirs();
+            }
+            file.createNewFile();
+            os = new BufferedOutputStream(new FileOutputStream(file));
+            if(bitmap != null) {
+            	bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+            }else {
+            	Log.e(TAG, "fail to obtain the user Icon!!!!");
+            }
+            
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+            }
+        }
+    }
 	
 	
 }

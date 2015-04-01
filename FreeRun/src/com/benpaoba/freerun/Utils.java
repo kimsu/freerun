@@ -1,7 +1,12 @@
 package com.benpaoba.freerun;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -10,9 +15,9 @@ import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ActivityManager.RunningTaskInfo;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,15 +27,20 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StatFs;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 public class Utils {
+	private final static String TAG = "FreeRun";
+	private static Toast mToast;
     //保证该类不能被实例化
     private Utils(){
 
@@ -315,7 +325,7 @@ public class Utils {
             android.content.DialogInterface.OnClickListener negativeBtnListener){
         Dialog dialog = null;
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        //builder.setIcon(iconId);
+        builder.setIcon(iconId);
         builder.setTitle(title);
         builder.setMessage(message);
         builder.setPositiveButton(positiveBtnName, positiveBtnListener);
@@ -323,4 +333,88 @@ public class Utils {
         dialog = builder.create();
         return dialog;
     }
+    
+    
+	public static final void showResultDialog(Context context, String msg,
+			String title) {
+		if(msg == null) return;
+		String rmsg = msg.replace(",", "\n");
+		new AlertDialog.Builder(context).setTitle(title).setMessage(rmsg)
+				.setNegativeButton("Sure", null).create().show();
+	}
+	
+	/**
+	 * 
+	 * @param activity
+	 * @param message
+	 * @param logLevel
+	 */
+	public static final void toastMessage(final Activity activity,
+			final String message, String logLevel) {
+		if ("w".equals(logLevel)) {
+			Log.w("sdkDemo", message);
+		} else if ("e".equals(logLevel)) {
+			Log.e("sdkDemo", message);
+		} else {
+			Log.d("sdkDemo", message);
+		}
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if (mToast != null) {
+					mToast.cancel();
+					mToast = null;
+				}
+				mToast = Toast.makeText(activity, message, Toast.LENGTH_SHORT);
+				mToast.show();
+			}
+		});
+	}
+	
+	/**
+	 * @param activity
+	 * @param message
+	 * @param logLevel
+	 *         
+	 */
+	public static final void toastMessage(final Activity activity,
+			final String message) {
+		toastMessage(activity, message, null);
+	}
+	
+	/**
+	 * 
+	 * @param imageUri
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public static Bitmap getbitmap(String imageUri) {
+		Log.v(TAG, "getbitmap:" + imageUri);
+		// 鏄剧ず缃戠粶涓婄殑鍥剧墖
+		Bitmap bitmap = null;
+		try {
+			URL myFileUrl = new URL(imageUri);
+			HttpURLConnection conn = (HttpURLConnection) myFileUrl
+					.openConnection();
+			conn.setDoInput(true);
+			conn.connect();
+			InputStream is = conn.getInputStream();
+			bitmap = BitmapFactory.decodeStream(is);
+			is.close();
+
+			Log.v(TAG, "image download finished." + imageUri);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Log.v(TAG, "getbitmap bmp fail---");
+			return null;
+		}
+		return bitmap;
+	}
+
+	
+	
+	
+	
+	
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">FreeRun</string>
     <string name="menu_settings">Settings</string>
@@ -11,4 +11,12 @@
     <string name="title_activity_walking_process">WalkingProcess</string>
 	<string name="nothing"></string>
 	<string name="image_arrow">Arrow image</string>
+	<string name="open_gps_message">为了提供更精确的记录，请打开GPS并选择\“高精确度\”模式，否则无法记录数据。</string>
+    <string name="button_ok">确定</string>
+    <string name="button_cancel">取消</string>
+    <string name="gps_signal_text">GPS信号: <xliff:g id="gps_signal_strength">%1$s</xliff:g> </string>
+    <string name="no_gps">无</string>
+    <string name="nomarl_gps">正常</string>
+    <string name="bad_gps">弱</string>
+    <string name="good_gps">强</string>
 </resources>
