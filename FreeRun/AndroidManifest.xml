@@ -43,8 +43,7 @@
         android:name="com.benpaoba.freerun.RunningApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@android:style/Theme.Light.NoTitleBar" >
+        android:label="@string/app_name" >
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="spzmcL3MMYZre6UvY2kUV6Pq" />

@@ -79,6 +79,7 @@ public class RunningMainActivity extends Activity {
 	private final static float DEFAULT_ZOOM_LEVEL = 18.0f;
 	private final static int SAVA_FILE_INTERVALS = 60;
 	private final static float UPPER_ZOOM_LEVEL = 18.0f;
+	private final static int INITIAL_COUNTER_VALUE = 3;
 	private int mSportStatus;
 	private DistanceInfoDao mDistanceInfoDao;
 	// 定位相关
@@ -174,10 +175,6 @@ public class RunningMainActivity extends Activity {
 	    mLeftButton = (Button)findViewById(R.id.btn_running_back);
 	    mRightButton = (Button)findViewById(R.id.btn_running_right);
 	    mLockImageButton = (ImageButton)findViewById(R.id.ibtn_running_lock);
-		mRunningStateLayout.setVisibility(View.GONE);
-	 	mLockedControllerLayout.setVisibility(View.GONE);
-	 	mCountDownView.setVisibility(View.GONE);
-	 	
 
 	 	mAverageSpeedView = (TextView)findViewById(R.id.tv_run_speed);
 	 	mPaceSpeedView = (TextView)findViewById(R.id.tv_run_pace);
@@ -202,12 +199,6 @@ public class RunningMainActivity extends Activity {
 				return true;
 			}
 		});
-	 	
-	 	if(mSportStatus == SportsManager.STATUS_INITIAL || mSportStatus == SportsManager.STATUS_READY) {
-	 	    mMiddleButton.setText(R.string.status_start);
-	 	    //mLeftButton.setVisibility(View.GONE);
-	 	    mRightButton.setVisibility(View.INVISIBLE);
-	 	}
 	 	
 	    // 地图初始化
 	 	mMapView = (MapView) findViewById(R.id.map_view);
@@ -283,36 +274,19 @@ public class RunningMainActivity extends Activity {
 			Log.d(TAG,"OnClick, view = " + view);
 			switch(view.getId()) {
 			case R.id.btn_running_back:
-				finish();
+				if(mSportStatus == SportsManager.STATUS_READY) {
+					isCounterCancelled = true;
+					mCountDownView.setVisibility(View.GONE);
+				}
 				break;
 				
 			case R.id.btn_running_middle:		
 				if(mSportStatus == SportsManager.STATUS_READY) {
 					if(GpsManager.isGpsOpen(RunningMainActivity.this)) {
-						mStartTime = System.currentTimeMillis();
-						SportsManager.createNewPointsFile();
-						mSportStatus = SportsManager.STATUS_RUNNING;
-						//startService(new Intent(RunningMainActivity.this, LocationService.class));
-						Intent intent = new Intent(SportsManager.STATUS_ACTION);
-						intent.putExtra("command",SportsManager.CMD_START);
-						Log.d("LocationService","RunningMainActivity, sendBroadcast()");
-						sendBroadcast(intent);
-						mSoundPlayer.play(SoundClips.START_SPORT,0,0,0);
-						
-						mMiddleButton.setText(R.string.status_pause);
-						mLeftButton.setVisibility(View.GONE);
-						mRightButton.setText(R.string.status_finished);
-						mRightButton.setVisibility(View.VISIBLE);
-						mLockImageButton.setVisibility(View.VISIBLE);
-						mRunningStateLayout.setVisibility(View.VISIBLE);
-						ContentValues values = new ContentValues();
-						values.put(RunRecordTable.COLUMN_DATE,mStartTime);
-						mInsertUri = RunningMainActivity.this.getContentResolver().
-								insert(FreeRunContentProvider.CONTENT_URI, values);
-						Log.d("yxf","mInsertUri = " + mInsertUri);
-						mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
-								+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
-						startTimer();
+						mRunningStateLayout.setVisibility(View.GONE);
+						mCountDownView.setVisibility(View.VISIBLE);
+						isCounterCancelled = false;
+						mUpdateDisplayHandler.post(mCounter);
 					} else {
 						new AlertDialog.Builder(RunningMainActivity.this)
 				        .setTitle(mContext.getString(R.string.open_gps_title))
@@ -413,6 +387,60 @@ public class RunningMainActivity extends Activity {
 		}
 	};
 
+	private boolean isCounterCancelled = false;
+	final Runnable mCounter = new Runnable() {  
+        int counterValue  = INITIAL_COUNTER_VALUE;
+        public void run() {
+        	if(counterValue > 0 && !isCounterCancelled){
+        	    mCountDownView.setText(String.valueOf(counterValue));
+        	    mMiddleButton.setEnabled(false);
+        	    mMiddleButton.setAlpha(0.5f);
+        	    counterValue--;
+        	    mUpdateDisplayHandler.postDelayed(this, 1000);
+        	}else if(counterValue == 0){
+        		mCountDownView.setVisibility(View.GONE);
+        		mMiddleButton.setEnabled(true);
+        		mMiddleButton.setAlpha(1f);
+        		mSportStatus = SportsManager.STATUS_RUNNING;
+        		mRunningStateLayout.setVisibility(View.VISIBLE);
+        		startRunning();
+        		counterValue = INITIAL_COUNTER_VALUE;
+        	}else if(isCounterCancelled){
+        		mCountDownView.setVisibility(View.GONE);
+        		mMiddleButton.setEnabled(true);
+        		mMiddleButton.setAlpha(1f);
+        		counterValue = INITIAL_COUNTER_VALUE;
+        	}
+        }
+    }; 
+    
+    private void startRunning() {
+		mStartTime = System.currentTimeMillis();
+		SportsManager.createNewPointsFile();
+		mSportStatus = SportsManager.STATUS_RUNNING;
+		//startService(new Intent(RunningMainActivity.this, LocationService.class));
+		Intent intent = new Intent(SportsManager.STATUS_ACTION);
+		intent.putExtra("command",SportsManager.CMD_START);
+		Log.d("LocationService","RunningMainActivity, sendBroadcast()");
+		sendBroadcast(intent);
+		mSoundPlayer.play(SoundClips.START_SPORT,0,0,0);
+		
+		mMiddleButton.setText(R.string.status_pause);
+		mLeftButton.setVisibility(View.GONE);
+		mRightButton.setText(R.string.status_finished);
+		mRightButton.setVisibility(View.VISIBLE);
+		mLockImageButton.setVisibility(View.VISIBLE);
+		mRunningStateLayout.setVisibility(View.VISIBLE);
+		ContentValues values = new ContentValues();
+		values.put(RunRecordTable.COLUMN_DATE,mStartTime);
+		mInsertUri = RunningMainActivity.this.getContentResolver().
+				insert(FreeRunContentProvider.CONTENT_URI, values);
+		Log.d("yxf","mInsertUri = " + mInsertUri);
+		mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
+				+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
+		startTimer();
+    }
+    
 	private void initialAndResetAllWidegts() {
 		mCurrentIndividualStatusSeconds = 0;
 		mRunDistanceTextView.setText(Utils.getValueWith2Suffix(0.0f));
@@ -700,26 +728,36 @@ public class RunningMainActivity extends Activity {
 	protected void onPause() {
 		mMapView.onPause();
 		super.onPause();
-		if (mSoundPlayer != null) {
-            mSoundPlayer.release();
-            mSoundPlayer = null;
-        }
 	}
-	
-	
 	
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
 	}
-
-	
 	
 	@Override
 	protected void onResume() {
 		mMapView.onResume();
 		super.onResume();
+		
+	 	mLockedControllerLayout.setVisibility(View.GONE);
+	 	
+	 	mLockImageButton.setVisibility(View.GONE);
+	 	
+	 	if(mSportStatus == SportsManager.STATUS_INITIAL || mSportStatus == SportsManager.STATUS_READY) {
+	 	    mMiddleButton.setText(R.string.status_start);
+	 	    mLeftButton.setVisibility(View.VISIBLE);
+	 	    mRightButton.setVisibility(View.INVISIBLE);
+	 	    mRunningStateLayout.setVisibility(View.GONE);
+	 	    mCountDownView.setVisibility(View.GONE);
+	 	}else if(mSportStatus == SportsManager.STATUS_RUNNING){
+	 	    mRunningStateLayout.setVisibility(View.VISIBLE);
+	 	    mLockImageButton.setVisibility(View.VISIBLE);
+	 	}else if(mSportStatus == SportsManager.STATUS_PAUSED) {
+	 		mRunningStateLayout.setVisibility(View.VISIBLE);
+	 		mLockImageButton.setVisibility(View.INVISIBLE);
+	 	}
 		Log.d(TAG,"onResume, height: " + mMapView.getHeight());
 		mSoundPlayer = SoundClips.getPlayer(this);
 		String gpsSinalDescription = String.format(
