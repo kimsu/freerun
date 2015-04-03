@@ -67,10 +67,11 @@
 			android:theme="@android:style/Theme.Translucent.NoTitleBar"
 			android:configChanges="orientation|keyboardHidden|screenSize" />
 
+        
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:theme="@android:style/Theme.NoTitleBar"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -90,7 +91,7 @@
             />
         <activity
             android:name="com.benpaoba.freerun.HistoryDetailsActivity"
-           android:label="@string/sports_details" >
+            android:label="@string/sports_details" >
         </activity>
         <provider 
             android:name=".database.FreeRunContentProvider"
@@ -125,7 +126,7 @@
         </activity>
         <activity 
             android:name="com.benpaoba.freerun.RunHistoryRecord"
-            android:label="@string/history_record">
+            android:label="@string/record_history">
             <intent-filter >
                 <action android:name="com.benpaoba.freerun.CHECKRECORD"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -25,6 +25,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.map.Projection;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
@@ -33,14 +34,18 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.DisplayMetrics;
+import android.content.Intent;
 
 public class HistoryDetailsActivity extends Activity implements
 		OnGetGeoCoderResultListener {
 	private static final String TAG = "HistoryDetails";
+	private static final int DEFAULT_LEVEL = 18;
 	private MapView mMapView;
 	private BaiduMap mBaiduMap;
 	private List<LatLng> mPointLists;
@@ -86,29 +91,84 @@ public class HistoryDetailsActivity extends Activity implements
                 .format(mStartTime));
         mTotalTimeTextView.setText(TimeFormatHelper.formatTime(mTotalTime));
         BigDecimal b = new BigDecimal(mTotalDistance / 1000); 
-    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        mTotalDistanceTextView.setText(String.valueOf(formatDistance));
+    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+        mTotalDistanceTextView.setText(Utils.formatDoubleValue(formatDistance));
         updateDetails(mTotalDistance, mTotalTime);
 		// 初始化地图
 		mMapView = (MapView) findViewById(R.id.map_view);
-		
-		mMapView.setVisibility(View.VISIBLE);
 		mBaiduMap = mMapView.getMap();
 		mBaiduMap.clear();
 		mSearch = GeoCoder.newInstance();
 		mDataFile = new File(SportsManager.POINTS_DIR,
 				SportsManager.POINTS_FILE + mId + SportsManager.SUFFIX);
 		mPointLists = (ArrayList<LatLng>) readPointsFromFile();
+		double mMaxWidthDistance = 0;
+		double mMaxHeightDistance = 0;
+		DistanceComputeInterface distanceComputeInterface = DistanceComputeImpl.getInstance();
+       
 		if(mPointLists != null && mPointLists.size() > 1 ) {
+	        double maxLat = mPointLists.get(0).latitude;
+	        double maxLng = mPointLists.get(0).longitude;
+	        double minLat = mPointLists.get(0).latitude;
+	        double minLng = mPointLists.get(0).longitude;
+			for(LatLng point : mPointLists) {
+				if(maxLat < point.latitude) {
+					maxLat = point.latitude;
+				}
+				
+				if(maxLng < point.longitude) {
+					maxLng = point.longitude;
+				}
+				
+				if(minLat > point.latitude) {
+					minLat = point.latitude;
+				}
+				
+				if(minLng > point.longitude) {
+					minLng = point.longitude;
+				}
+			}
+			
+			mMaxWidthDistance = distanceComputeInterface.getShortDistance(
+	        			minLat,
+	        			minLng,
+	        			minLat,
+	        			maxLng);
+		    mMaxHeightDistance = distanceComputeInterface.getShortDistance(
+		    		minLat, 
+		    		minLng, 
+		    		maxLat, 
+		    		minLng);
+		    
 		    mStartPoint = mPointLists.get(0);
 		    mEndPoint = mPointLists.get(mPointLists.size() - 1);
 		    mSearch.reverseGeoCode(new ReverseGeoCodeOption().
-				    location(mPointLists.get(mPointLists.size() - 1)));
+				    location(new LatLng((minLat + maxLat) / 2,(minLng + maxLng) / 2)));
 		    mSearch.setOnGetGeoCodeResultListener(this);
-		
 		    addSportDetails();
+		    
 		}
+		DisplayMetrics dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		int screenWidth = dm.widthPixels;
+		int screenHeight = dm.heightPixels;
+	
+		Projection projection = mBaiduMap.getProjection();
+		float meterToPixelsInWidth = 0;
+		float meterToPixelsInHeight = 0;
+		Log.d(TAG,"sceenH = " + screenHeight + ", w = " + screenWidth + ", maxW = " + mMaxWidthDistance + 
+				", maxH = " + mMaxHeightDistance + ", meter : " + projection);
+		
 	}
+
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		getMenuInflater().inflate(R.menu.sports_details, menu);
+		return true;
+	}
+
 
 	private void updateDetails(final double distance, final long usedTime) {
     	if(distance == 0 || usedTime == 0) {
@@ -117,9 +177,9 @@ public class HistoryDetailsActivity extends Activity implements
     	double averageSpeed = (60 * 60 * distance) / 1000 / usedTime;   //km/h
     	double paceSpeed = (1000 * usedTime ) / distance; //seconds
     	BigDecimal b = new BigDecimal(averageSpeed); 
-    	double formatSpeed = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    	double formatSpeed = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
     	
-    	mAverageSpeedTextView.setText(String.valueOf(formatSpeed));
+    	mAverageSpeedTextView.setText(Utils.formatDoubleValue(formatSpeed));
     	mPaceSpeedTextView.setText(TimeFormatHelper.formatTime((int)paceSpeed));
     }
 	
@@ -129,6 +189,14 @@ public class HistoryDetailsActivity extends Activity implements
 		final int id = item.getItemId();
 		if(id == android.R.id.home) {
 			finish();
+			return true;
+		}else if(id == R.id.action_share) {
+			Intent intent=new Intent(Intent.ACTION_SEND); 
+			intent.setType("text/plain"); //"image/*"
+			intent.putExtra(Intent.EXTRA_SUBJECT,"共享软件"); 
+			intent.putExtra(Intent.EXTRA_TEXT, "最专业的跑步软件 【奔跑吧】，亲们赶快使用吧，很多惊喜哦~");
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
+			startActivity(Intent.createChooser(intent, "选择分享类型"));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -181,6 +249,7 @@ public class HistoryDetailsActivity extends Activity implements
 		// TODO Auto-generated method stub
 		mMapView.onPause();
 		super.onPause();
+		Log.d(TAG,"Histroy, onPause()");
 	}
 
 	@Override
@@ -188,6 +257,7 @@ public class HistoryDetailsActivity extends Activity implements
 		// TODO Auto-generated method stub
 		mMapView.onDestroy();
 		super.onDestroy();
+		Log.d(TAG,"Histroy, onDestroy()");
 	}
 
 	private void addSportDetails() {
@@ -220,8 +290,11 @@ public class HistoryDetailsActivity extends Activity implements
 		}
 		 
 		LatLng latLng = result.getLocation();
-		mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(
-			result.getLocation(), 17));
+		if(mBaiduMap != null) {
+		    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(
+			    result.getLocation(), DEFAULT_LEVEL));
 		}
+		
 	}
+}
 

@@ -268,7 +268,7 @@
 					android:layout_height="wrap_content" 
 					android:layout_marginLeft="15.0dip" 
 					android:layout_centerVertical="true"
-					android:text="record_history"/>
+					android:text="@string/record_history"/>
                 <ImageView 
 					android:id="@+id/common_icon_arrow" 
 					android:background="@drawable/icon_list_arrow"

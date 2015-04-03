@@ -412,9 +412,10 @@ public class Utils {
 		return bitmap;
 	}
 
-	
-	
-	
-	
+	public static String formatDoubleValue(double value) {
+		BigDecimal b = new BigDecimal(value); 
+    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+		return String.format("%.2f",formatDistance);
+	}
 	
 }

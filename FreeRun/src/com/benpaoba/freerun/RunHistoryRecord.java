@@ -27,6 +27,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class RunHistoryRecord extends Activity {
+	
+	public static final int SORT_BY_USEDTIME = 1;
+	public static final int SORT_BY_DISTANCE = 2;
+	public static final int SORT_BY_DEFAULT = 0;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,17 +58,21 @@ public class RunHistoryRecord extends Activity {
 		if(id == android.R.id.home) {
 			finish();
 			return true;
-		}else if(id == R.id.menu_sort_up){
+		}else if(id == R.id.menu_sort_by_usedtime){
 			RecordListFragment appListFragment = (RecordListFragment)getFragmentManager().findFragmentById(R.id.container_roots);
-			appListFragment.onSortModeChanged(1);
+			appListFragment.onSortModeChanged(SORT_BY_USEDTIME);
 			return true;
-		}else if(id == R.id.menu_sort_down){
+		}else if(id == R.id.menu_sort_by_distance){
 			RecordListFragment appListFragment = (RecordListFragment)getFragmentManager().findFragmentById(R.id.container_roots);
-			appListFragment.onSortModeChanged(2);
+			appListFragment.onSortModeChanged(SORT_BY_DISTANCE);
 			return true;
-		}else {
-		    return super.onOptionsItemSelected(item);
+		}else if(id == R.id.menu_sort_by_default){
+			RecordListFragment appListFragment = (RecordListFragment)getFragmentManager().findFragmentById(R.id.container_roots);
+			appListFragment.onSortModeChanged(SORT_BY_DEFAULT);
+			return true;
 		}
+		
+		return super.onOptionsItemSelected(item);
 	}
 	
 	public static class RecordListFragment extends Fragment {
@@ -71,7 +80,8 @@ public class RunHistoryRecord extends Activity {
 		private ListView mList;
 		private Context mContext;
 
-		private int sortMode;
+		//default sort mode
+		private int sortMode = SORT_BY_DEFAULT;
 		private LoaderCallbacks<RecordResult> mCallbacks;
 		protected DocumentsAdapter mAdapter;
 
@@ -87,6 +97,7 @@ public class RunHistoryRecord extends Activity {
 		}
 
 		public void onSortModeChanged(int mode) {
+			Log.d("yxf", "onSortModeChanged(), mode = " + mode); 
 			sortMode = mode;
 			getLoaderManager().restartLoader(0, null, mCallbacks);
 		}
@@ -101,12 +112,14 @@ public class RunHistoryRecord extends Activity {
 				@Override
 				public Loader<RecordResult> onCreateLoader(int id,
 						Bundle args) {
+					Log.d("yxf","onCreateLoader()");
 					return new RecordLoader(getActivity(),sortMode);
 				}
 
 				@Override
 				public void onLoadFinished(Loader<RecordResult> loader,
 						RecordResult result) {
+					Log.d("yxf","onLoadFinished(), result = " + result);
 					if (!isAdded())
 						return;
 					mAdapter.swapResult(result);
@@ -179,7 +192,8 @@ public class RunHistoryRecord extends Activity {
                 
                 TextView usedTimeView = (TextView)view.findViewById(R.id.textViewTimeContent);
                 usedTimeView.setText(TimeFormatHelper.formatTime(usedTime));
-                distanceView.setText((distance == 0) ? String.valueOf(distance/1000):"0.00");
+                Log.d("yxf","getView, positon = " + position + ", distance = " + distance);
+                distanceView.setText((distance != 0) ? Utils.formatDoubleValue(distance/1000):"0.00");
                 
                 arrowImage.setOnClickListener(new View.OnClickListener() {
 					

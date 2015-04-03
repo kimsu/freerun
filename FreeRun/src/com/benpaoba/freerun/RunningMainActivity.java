@@ -327,6 +327,7 @@ public class RunningMainActivity extends Activity {
 				stopService(new Intent(RunningMainActivity.this, LocationService.class));
 				mSoundPlayer.play(SoundClips.COMPLETE_SPORT,0,0,0);
 				cancelTimer();
+				//clear all the overlays
 				
 				ContentValues values = new ContentValues();
 				values.put(RunRecordTable.COLUMN_DATE,mStartTime);
@@ -336,10 +337,8 @@ public class RunningMainActivity extends Activity {
 
 				RunningMainActivity.this.getContentResolver().update(mInsertUri,
 						values,
-						RunRecordTable.COLUMN_USEDTIME + "=? AND "
-		                        + RunRecordTable.COLUMN_DISTANCE + "=?",
-		                        new String[] { String.valueOf(mCurrentIndividualStatusSeconds),
-		                			    String.valueOf(mCurrentDistance)}
+						RunRecordTable.COLUMN_ID + "=?",
+		                        new String[] {mInsertUri.getLastPathSegment()}
 						);
 //				if(mCurrentDistance < 10) {
 //					Utils.createConfirmDialog(RunningMainActivity.this,
@@ -351,6 +350,7 @@ public class RunningMainActivity extends Activity {
 				
 				Log.d("yxf","saveFile : " + mSaveFile.getAbsolutePath());
 				savePointsToFiles(mPointLists, mSaveFile);
+				mPointLists.clear();
 				Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
 				intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
 				intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
@@ -358,7 +358,7 @@ public class RunningMainActivity extends Activity {
 				intent.putExtra("start_time",mStartTime);
 				startActivity(intent);
 //				}
-				
+				mBaiduMap.clear();
 				mSportStatus = SportsManager.STATUS_READY;
 				mMiddleButton.setText(R.string.status_start);
 				mRightButton.setVisibility(View.INVISIBLE);
@@ -443,6 +443,9 @@ public class RunningMainActivity extends Activity {
     
 	private void initialAndResetAllWidegts() {
 		mCurrentIndividualStatusSeconds = 0;
+		mCurrentDistance = 0;
+		mPointBeforeLast = null;
+		mPointLast = null;
 		mRunDistanceTextView.setText(Utils.getValueWith2Suffix(0.0f));
 		mRunTimeTextView.setText(TimeFormatHelper.formatTime(0));
 	}
@@ -504,15 +507,17 @@ public class RunningMainActivity extends Activity {
 					.direction(100).latitude(location.getLatitude())
 					.longitude(location.getLongitude()).build();
 			mBaiduMap.setMyLocationData(locData);
+			if(mIsFirstLoc) {
 			    mIsFirstLoc = false;
 				LatLng ll = new LatLng(location.getLatitude(),
 			            location.getLongitude());
 				MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, DEFAULT_ZOOM_LEVEL);
 				mBaiduMap.animateMapStatus(u);
+			}
 			// draw the sports path
 			if (mSportStatus == SportsManager.STATUS_RUNNING && 
-					(location.getLocType() == BDLocation.TypeGpsLocation ||
-					(location.getLocType() == BDLocation.TypeNetWorkLocation))) {
+					(location.getLocType() == BDLocation.TypeGpsLocation /*||
+					(location.getLocType() == BDLocation.TypeNetWorkLocation)*/)) {
 				LatLng currentPoint = new LatLng(location.getLatitude(),
 						location.getLongitude());
 				List<LatLng> pointLists = new ArrayList<LatLng>();
@@ -560,8 +565,8 @@ public class RunningMainActivity extends Activity {
 		public String call() throws Exception {
 			// TODO Auto-generated method stub
 			if(mSportStatus == SportsManager.STATUS_RUNNING && 
-					(mLocation.getLocType() == BDLocation.TypeGpsLocation ||
-					mLocation.getLocType() == BDLocation.TypeNetWorkLocation)) {
+					(mLocation.getLocType() == BDLocation.TypeGpsLocation /*||
+					mLocation.getLocType() == BDLocation.TypeNetWorkLocation*/)) {
 				
 				mCurrentGpsLocation = new GpsLocation(mLocation.getLatitude(), mLocation.getLongitude());
                 double addedDistance = 0.0f;
@@ -573,7 +578,7 @@ public class RunningMainActivity extends Activity {
 					mCurrentDistance += addedDistance;
 				}
 				BigDecimal b = new BigDecimal(mCurrentDistance / 1000); 
-		    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
 		    	mUpdateDisplayHandler.sendMessage(Message.obtain(mUpdateDisplayHandler, UPDATE_DISTANCE,formatDistance));
 		    	//Whether to play sound 
 		    	if((formatDistance > 0) && ((formatDistance * 100) % 100) == 0 && (!mSoundPlayer.isPlaying())) {
@@ -673,10 +678,10 @@ public class RunningMainActivity extends Activity {
     	}
     	double averageSpeed = (60 * 60 * distance) / 1000 / usedTime;   //km/h
     	double paceSpeed = (1000 * usedTime ) / distance; //seconds
-    	BigDecimal b = new BigDecimal(averageSpeed); 
-    	double formatSpeed = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    	//BigDecimal b = new BigDecimal(averageSpeed); 
+    	//double formatSpeed = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
     	
-    	mAverageSpeedView.setText(String.valueOf(formatSpeed));
+    	mAverageSpeedView.setText(Utils.formatDoubleValue((averageSpeed)));
     	mPaceSpeedView.setText(TimeFormatHelper.formatTime((int)paceSpeed));
     }
 	/**
@@ -727,6 +732,7 @@ public class RunningMainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		mMapView.onPause();
+		Log.d(TAG,"RunningMap, onPause()");
 		super.onPause();
 	}
 	
@@ -734,12 +740,14 @@ public class RunningMainActivity extends Activity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		Log.d(TAG,"RunningMap, onStop()");
 	}
 	
 	@Override
 	protected void onResume() {
 		mMapView.onResume();
 		super.onResume();
+		Log.d(TAG,"RunningMap, onResume()");
 		
 	 	mLockedControllerLayout.setVisibility(View.GONE);
 	 	
@@ -940,6 +948,7 @@ public class RunningMainActivity extends Activity {
             cancelTimer();
         }
 		super.onDestroy();
+		Log.d(TAG,"RunningMapm onDestroy()");
 		if (mSoundPlayer != null) {
             mSoundPlayer.release();
             mSoundPlayer = null;
@@ -947,7 +956,7 @@ public class RunningMainActivity extends Activity {
 	}
 	
 	private void updateDistance(double result) {
-		mRunDistanceTextView.setText(String.valueOf(result));
+		mRunDistanceTextView.setText(Utils.formatDoubleValue((result)));
 	}
 
 	@Override

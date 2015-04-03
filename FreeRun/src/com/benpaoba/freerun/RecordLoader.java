@@ -1,12 +1,13 @@
 package com.benpaoba.freerun;
 
 import com.benpaoba.freerun.database.FreeRunContentProvider;
+import com.benpaoba.freerun.database.RunRecordTable;
 
 import android.content.AsyncTaskLoader;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.provider.ContactsContract;
+import android.util.Log;
 
 public class RecordLoader extends AsyncTaskLoader<RecordResult>{
 	private RecordResult mResult;
@@ -29,14 +30,11 @@ public class RecordLoader extends AsyncTaskLoader<RecordResult>{
 	@Override
 	public RecordResult loadInBackground() {
 		// TODO Auto-generated method stub
+		Log.d("yxf","RecordLoader, loadInBackground(), mode = "+ mode);
 		RecordResult result = new RecordResult();
 	    ContentResolver resolver = getContext().getContentResolver();
 	    Cursor cursor = null;
-	    if(mode == 1) {
-	    	cursor = resolver.query(FreeRunContentProvider.CONTENT_URI, null, null, null, null);
-	    }else{
-	        cursor = resolver.query(FreeRunContentProvider.CONTENT_URI, null, null, null, getQuerySortOrder(mode));
-	    }
+	    cursor = resolver.query(FreeRunContentProvider.CONTENT_URI, null, null, null, getQuerySortOrder(mode));
 	     
 		result.cursor = cursor;
 		return result;
@@ -72,12 +70,12 @@ public class RecordLoader extends AsyncTaskLoader<RecordResult>{
 	
 	public static String getQuerySortOrder(int sortOrder) {
         switch (sortOrder) {
-            case 1:
-                return ContactsContract.Contacts.DISPLAY_NAME + " ASC";
-            case 2:
-                return ContactsContract.Contacts.DISPLAY_NAME + " DESC";
+            case RunHistoryRecord.SORT_BY_USEDTIME:
+                return RunRecordTable.COLUMN_USEDTIME + " DESC";
+            case RunHistoryRecord.SORT_BY_DISTANCE:
+                return RunRecordTable.COLUMN_DISTANCE + " DESC";
             default:
-                return null;
+                return RunRecordTable.COLUMN_DATE + " DESC";
         }
     }
 }

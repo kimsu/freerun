@@ -83,7 +83,7 @@
                     android:layout_height="fill_parent"
                     android:gravity="center"
                     android:text="3"
-                    android:textColor="#ffed5465"
+                    android:textColor="@color/white"
                     android:textSize="120.0sp" />
 
                 <!-- display layout for running state -->

@@ -1,16 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-   <item
-        android:id="@+id/menu_sort_up"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_sort_up"/>
-    
-    <item
-        android:id="@+id/menu_sort_down"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_sort_down"/>
-</menu>
 
-    
-     
+    <item
+        android:id="@+id/menu_sort"
+        android:icon="@drawable/ic_menu_sortby"
+        android:showAsAction="always"
+        android:title="@string/menu_sort">
+        <menu>
+            <item
+                android:id="@+id/menu_sort_by_usedtime"
+                android:title="@string/menu_sort_by_usedtime"/>
+            <item
+                android:id="@+id/menu_sort_by_distance"
+                android:title="@string/menu_sort_by_distance"/>
+            <item
+                android:id="@+id/menu_sort_by_default"
+                android:title="@string/menu_sort_by_default"/>
+        </menu>
+    </item>
+
+</menu>

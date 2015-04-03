@@ -17,11 +17,14 @@
     <string name="bad_gps">弱</string>
     <string name="good_gps">强</string>
     <string name="sports_details">运动轨迹</string>
-    <string name="menu_sort_down">降序</string>
-    <string name="menu_sort_up">升序</string>
+    <string name="menu_sort" msgid="7677740407158414452">"排序依据"</string>
+    <string name="menu_sort_by_default">默认</string>
+    <string name="menu_sort_by_usedtime">按用时</string>
+    <string name="menu_sort_by_distance">按距离</string>
     <string name="text_time">时间</string>
     <string name="text_distance">距离</string>
     <string name="text_calorie">卡路里</string>
-    <string name="history_record">我的跑步记录</string>
+    <string name="record_history">我的跑步记录</string>
+    <string name="menu_share">分享</string>
 
 </resources>
