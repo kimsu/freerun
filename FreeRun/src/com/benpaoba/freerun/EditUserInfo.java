@@ -64,7 +64,7 @@ public class EditUserInfo extends Activity {
 	private TextView height_text;
 	private RelativeLayout weight;
 	private TextView weight_text;
-	private Button exit;
+//	private Button exit;
 	private static String path;
 	
 	
@@ -303,15 +303,15 @@ public class EditUserInfo extends Activity {
 		});
 		
 		//Exit
-		Button exit = (Button) findViewById(R.id.exit);
-		exit.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				onBackPressed();
-			}
-		});
+//		Button exit = (Button) findViewById(R.id.exit);
+//		exit.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View v) {
+//				 TODO Auto-generated method stub
+//				onBackPressed();
+//			}
+//		});
 		
 	}
 	

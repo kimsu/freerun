@@ -4,15 +4,23 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.LoaderManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -21,12 +29,18 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.benpaoba.freerun.database.FreeRunContentProvider;
+import com.benpaoba.freerun.database.RunRecordTable;
 import com.tencent.connect.UserInfo;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
@@ -100,6 +114,9 @@ public class LoginAndProfileInfo extends Activity {
 	private static String path;
 	private AlertDialog.Builder builder;
 	
+	private Cursor mCursor;
+	
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +130,79 @@ public class LoginAndProfileInfo extends Activity {
 		// 初始化视图
 		
 		initViews();
+		onListenMyItemClick();
+		
+		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
+		
+		String[]  projectionId = {RunRecordTable.COLUMN_USEDTIME, 
+				RunRecordTable.COLUMN_DISTANCE};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+						projectionId, 
+						null,
+						null, 
+						RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "Cursor Position: " + mCursor.getPosition());
+			mCursor.moveToNext();
+			int usedTime = mCursor.getInt(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_USEDTIME));
+			int distance = (int)mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_DISTANCE));
+			float bestVel = loginDataPreference.getFloat(SPEEDMATCH, 0);
+			if(distance != 0 && bestVel < usedTime/distance) {
+				fastestSpeedMatch.setText(Math.floor(usedTime)/distance + "'" 
+						+ usedTime%distance + "\"");
+				loginDataPreference.edit().putFloat(SPEEDMATCH, usedTime/distance).commit();
+					
+			}
+			
+		}
+		
+		
+	}
+	@Override
+	protected void onStart() {
+		super.onStart();
+		//handle user profile info
+
+	}
+	
+	
+	private void initViews() {
+		
+		userSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
+		userIcon = (ImageView)findViewById(R.id.img_user_avatar);
+		userIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
+		login = (LinearLayout)findViewById(R.id.login);
+		logout = (LinearLayout)findViewById(R.id.logout);
+		editInfo = (TextView)findViewById(R.id.info_edit);
+		userNickname = (TextView)findViewById(R.id.pro_nickname);
+		totalDistance = (TextView)findViewById(R.id.total_distance);
+		totalTime = (TextView)findViewById(R.id.total_time);
+		totalCalories = (TextView)findViewById(R.id.total_calories);
+
+		//handle the bestest history record. Start.
+		fastestSpeedMatch = (TextView)findViewById(R.id.fastest_speed_match);
+		longestDistance = (TextView)findViewById(R.id.longest_distance);
+		longestTime = (TextView)findViewById(R.id.longest_time);
+		shortestTimeFive = (TextView)findViewById(R.id.shortest_time_five);
+		shortestTimeTen = (TextView)findViewById(R.id.shortest_time_ten);
+		shortestTimeHalfMarathon = (TextView)findViewById(R.id.shortest_time_half_marathon);
+		shortestTimeFullMarathon = (TextView)findViewById(R.id.shortest_time_full_marathon);
+		
+		//run history record
+		historyTimes = (TextView)findViewById(R.id.record_history_times);
+		checkHistoryRecord = (RelativeLayout) findViewById(R.id.run_history);
+		
+		//More setup
+		moreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
+		handleLogin();			
+
+	}
+
+private void  onListenMyItemClick() {
 		
 		// show Login dialog
 		userSummaryInfo.setOnClickListener(new OnClickListener() {
@@ -141,29 +231,29 @@ public class LoginAndProfileInfo extends Activity {
 							
 							}
 						});
-			} else {
-				builder.setMessage("Do you want to Logout ?")
-				   .setCancelable(false)
-				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-				        public void onClick(DialogInterface dialog, int id) {
-				        	Log.d(TAG, "\n======  LOGOUT END  ============");
-							logout();
-							logState = false;
-							loginDataPreference
-			            	.edit()
-			            		.putBoolean(LOGSTATE, false)
-			            			.commit();
-							handleLogin();
-							dialog.cancel();
-					      }
-					 })
-					.setNegativeButton("No", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-								dialog.dismiss();
-						}
-					});
-				
 			}
+//			else {
+//				builder.setMessage("Do you want to Logout ?")
+//				   .setCancelable(false)
+//				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//				        public void onClick(DialogInterface dialog, int id) {
+//				        	Log.d(TAG, "\n======  LOGOUT END  ============");
+//							logout();
+//							logState = false;
+//							loginDataPreference
+//			            	.edit()
+//			            		.putBoolean(LOGSTATE, false)
+//			            			.commit();
+//							handleLogin();
+//							dialog.cancel();
+//					      }
+//					 })
+//					.setNegativeButton("No", new DialogInterface.OnClickListener() {
+//						public void onClick(DialogInterface dialog, int id) {
+//								dialog.dismiss();
+//						}
+//					});
+//			}
 			
 			builder.create()
 					.show();
@@ -207,48 +297,7 @@ public class LoginAndProfileInfo extends Activity {
 				startActivity(intent);
 			}
 		});
-		
 	}
-	@Override
-	protected void onStart() {
-		super.onStart();
-		//handle user profile info
-
-	}
-	
-	
-	private void initViews() {
-		
-		userSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
-		userIcon = (ImageView)findViewById(R.id.img_user_avatar);
-		userIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
-		login = (LinearLayout)findViewById(R.id.login);
-		logout = (LinearLayout)findViewById(R.id.logout);
-		editInfo = (TextView)findViewById(R.id.info_edit);
-		userNickname = (TextView)findViewById(R.id.pro_nickname);
-		totalDistance = (TextView)findViewById(R.id.total_distance);
-		totalTime = (TextView)findViewById(R.id.total_time);
-		totalCalories = (TextView)findViewById(R.id.total_calories);
-
-		//handle the bestest history record. Start.
-		fastestSpeedMatch = (TextView)findViewById(R.id.fastest_speed_match);
-		longestDistance = (TextView)findViewById(R.id.longest_distance);
-		longestTime = (TextView)findViewById(R.id.longest_time);
-		shortestTimeFive = (TextView)findViewById(R.id.shortest_time_five);
-		shortestTimeTen = (TextView)findViewById(R.id.shortest_time_ten);
-		shortestTimeHalfMarathon = (TextView)findViewById(R.id.shortest_time_half_marathon);
-		shortestTimeFullMarathon = (TextView)findViewById(R.id.shortest_time_full_marathon);
-		
-		//run history record
-		historyTimes = (TextView)findViewById(R.id.record_history_times);
-		checkHistoryRecord = (RelativeLayout) findViewById(R.id.run_history);
-		
-		//More setup
-		moreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
-		handleLogin();			
-
-	}
-
 	private void handleLogin()
 	{ 
 		
@@ -324,10 +373,10 @@ public class LoginAndProfileInfo extends Activity {
 	/**
 	 * 调用QQ注销接口
 	 * */
-	public void logout()
-	{
-		mTencent.logout(this);
-	}
+//	public void logout()
+//	{
+//		mTencent.logout(this);
+//	}
 	
 	private void updateUserInfo() {
 		Log.d(TAG, "LoginAndProfileInfo: updateUserInfo() " + " isSessionValid = " + mTencent.isSessionValid());
@@ -461,6 +510,7 @@ public class LoginAndProfileInfo extends Activity {
 	    		updateUserInfo();
 	            //updateLoginButton();
 	            Utils.showResultDialog(LoginAndProfileInfo.this, data.getStringExtra(Constants.LOGIN_INFO), "登录成功");
+	    		
 	    	}
 	    }
 	    super.onActivityResult(requestCode, resultCode, data);
@@ -506,9 +556,11 @@ public class LoginAndProfileInfo extends Activity {
                 Utils.showResultDialog(LoginAndProfileInfo.this, "返回为空", "登录失败");
                 return;
             }
-			Utils.showResultDialog(LoginAndProfileInfo.this, response.toString(), "登录成功");
+			//Utils.showResultDialog(LoginAndProfileInfo.this, response.toString(), "登录成功");
             // 有奖分享处理
             // handlePrizeShare();
+            MyLoginPromptDialog dialongPrompt = new MyLoginPromptDialog();
+    		dialongPrompt.show(getFragmentManager(), "MyLoginPromptDialog");
 			doComplete((JSONObject)response);
 		}
 
@@ -569,6 +621,103 @@ public class LoginAndProfileInfo extends Activity {
                 }
             }
         }
+    }
+    
+    private class MyLoaderCallBacks implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    	//you attempt to access  a loaderfor example, through initLoader()), 
+    	//it checks to see whether the loader specified by the ID exists.
+    	//if it does't, it triggers the LoaderManager.LoaderCallbacks<Cursor> 
+    	// onCreateLoader method
+    	//initLoader invoke this method if the specified id loader doen't exist
+		@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+			// TODO Auto-generated method stub
+			Log.d(TAG, "Create Loader ID: " + id);
+			String loaderCreateProjection[] = {RunRecordTable.COLUMN_DISTANCE, 
+					               RunRecordTable.COLUMN_FIVE,
+					               RunRecordTable.COLUMN_TEN,
+					               RunRecordTable.COLUMN_HALF_MAR,
+					               RunRecordTable.COLUMN_FULL_MAR,
+					               RunRecordTable.COLUMN_USEDTIME};
+			CursorLoader cursorLoader = new CursorLoader(LoginAndProfileInfo.this,
+						FreeRunContentProvider.CONTENT_URI, 
+						loaderCreateProjection,
+						null, 
+						null,
+						null);
+			return cursorLoader;
+		}
+
+		// If at the point of this call the caller is in its started state,
+		//	and the requested loader already exists and has generated its data,
+		@Override
+		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+			// TODO Auto-generated method stub
+			Log.d(TAG, "LoaderManager: onLoadFinished()");
+		}
+		
+		//This callback lets you find out when the data is about to be released 
+		//so you can remove your reference to it.  
+		@Override
+		public void onLoaderReset(Loader<Cursor> arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+    	
+    }
+    
+    public static  class MyLoginPromptDialog extends DialogFragment {
+    	private String TAG = "MyLoginPromptDialog";
+    	private View view;
+    	
+    	@Override
+    	public void onCreate(Bundle savedInstanceState) {
+    		// TODO Auto-generated method stub
+    		super.onCreate(savedInstanceState);
+    	}
+    	
+    	@Override
+    	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    			Bundle savedInstanceState) {
+    		// TODO Auto-generated method stub
+    		 view = 
+    				inflater.inflate(R.layout.fragment_login_prompt, container);
+    		return view;
+    	}
+    	@Override
+    	public void onActivityCreated(Bundle savedInstanceState) {
+    		// TODO Auto-generated method stub
+    		getDialog().setTitle("开始使用吧！");
+    		Button editInfo = (Button) view.findViewById(R.id.editInfo);
+    		editInfo.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent();
+					intent.setComponent(new ComponentName(
+							getActivity(), 
+							EditUserInfo.class));
+					startActivity(intent);
+					getDialog().dismiss();
+					
+				}
+			});
+    		
+    		Button nothingDone = (Button) view.findViewById(R.id.thanks);
+    		nothingDone.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Log.d(TAG, "MyLoginPromtDialog: dismiss()");
+					getDialog().dismiss();
+				}
+			});
+    		
+    		super.onActivityCreated(savedInstanceState);
+    	}
     }
 	
 	

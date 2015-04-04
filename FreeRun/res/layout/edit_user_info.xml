@@ -38,8 +38,7 @@
             android:id="@+id/editIcon"
             android:layout_width="match_parent"
             android:layout_height="70dip"
-            android:background="@color/white"
-            android:onClick="onEditClick">
+            android:background="@color/white">
             <TextView 
 				style="@style/LayoutEditUserInfoItemName"
                 android:text="头像"/>
@@ -60,8 +59,7 @@
             android:id="@+id/nickname"
             android:layout_width="match_parent"
 			android:layout_height="@dimen/edit_user_info_entry_highth"
-            android:background="@color/white"
-            android:onClick="onEditClick">
+            android:background="@color/white">
             <TextView 
 				style="@style/LayoutEditUserInfoItemName"
                 android:text="昵称"/>
@@ -78,8 +76,7 @@
             android:id="@+id/sex"
             android:layout_width="match_parent"
 			android:layout_height="@dimen/edit_user_info_entry_highth"
-            android:background="@color/white"
-            android:onClick="onEditClick">
+            android:background="@color/white">
             <TextView 
 				style="@style/LayoutEditUserInfoItemName"
                 android:text="性别"/>
@@ -115,8 +112,7 @@
             android:id="@+id/height" 
             android:layout_width="match_parent"
             android:layout_height="@dimen/edit_user_info_entry_highth"
-            android:background="@color/white"
-            android:onClick="onEditClick">
+            android:background="@color/white">
             <TextView 
 				style="@style/LayoutEditUserInfoItemName"
                 android:text="身高"/>
@@ -143,7 +139,7 @@
 				style="@style/LayoutEditUserInfoItemConent"
                 android:text="62Kg"/>
         </RelativeLayout>
-        
+        <!-- 
 		<Button
 		    android:id="@+id/exit"
 		    android:layout_width="match_parent"
@@ -157,6 +153,7 @@
 		    android:background="@color/red"
 		    android:text="退出"
 		    android:textSize="18sp"/>
+		  -->
     </LinearLayout>
 </LinearLayout>
 </ScrollView>

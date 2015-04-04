@@ -67,7 +67,6 @@
 			android:theme="@android:style/Theme.Translucent.NoTitleBar"
 			android:configChanges="orientation|keyboardHidden|screenSize" />
 
-        
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
             android:label="@string/app_name"
@@ -91,7 +90,7 @@
             />
         <activity
             android:name="com.benpaoba.freerun.HistoryDetailsActivity"
-            android:label="@string/sports_details" >
+           android:label="@string/sports_details" >
         </activity>
         <provider 
             android:name=".database.FreeRunContentProvider"
@@ -134,8 +133,9 @@
         </activity>
         <activity 
             android:name="com.benpaoba.freerun.MoreSetupChoice"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:launchMode="singleTop">>
+            android:icon="@android:color/holo_green_light"
+            android:label="更多"
+            android:launchMode="singleTop">
             <intent-filter >
                 <action android:name="com.benpaoba.freerun.SETUP"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+	
+    <Button 
+        android:id="@+id/editInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dip"
+        android:layout_marginRight="50dip"
+        android:layout_marginTop="15dip"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:text="编辑个人资料"/>
+    
+    <Button 
+        android:id="@+id/thanks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dip"
+        android:layout_marginBottom="20dip"
+        android:layout_marginLeft="50dip"
+        android:layout_marginRight="50dip"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:text="不了，谢谢！"/>
+    
+    
+
+</LinearLayout>

@@ -339,8 +339,12 @@ public class Utils {
 			String title) {
 		if(msg == null) return;
 		String rmsg = msg.replace(",", "\n");
-		new AlertDialog.Builder(context).setTitle(title).setMessage(rmsg)
-				.setNegativeButton("Sure", null).create().show();
+		new AlertDialog.Builder(context)
+			.setTitle(title)
+			.setMessage(rmsg)
+			.setNegativeButton("Sure", null)
+			.create()
+			.show();
 	}
 	
 	/**
@@ -411,11 +415,16 @@ public class Utils {
 		}
 		return bitmap;
 	}
-
+	
 	public static String formatDoubleValue(double value) {
 		BigDecimal b = new BigDecimal(value); 
-    	double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+		double formatDistance = b.setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
 		return String.format("%.2f",formatDistance);
 	}
+	
+	
+	
+	
+	
 	
 }

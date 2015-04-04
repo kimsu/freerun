@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/green"
+    android:orientation="vertical" >
+    <RelativeLayout
+        android:id="@+id/offlinemap_download" 
+		android:layout_width="fill_parent"
+		android:layout_height="54dip"
+		android:layout_marginTop="10dip"
+		android:background="@color/white">
+        <TextView 
+			android:textSize="25sp" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:layout_marginLeft="15.0dip"
+			android:layout_centerVertical="true"
+			android:layout_alignParentLeft="true"
+			android:text="离线地图"/>
+            <TextView 
+				android:id="@+id/download_state"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_alignParentRight="true" 
+				android:layout_marginRight="15.0dip" 
+				android:layout_centerVertical="true"
+				android:textSize="15sp"
+				android:text="点击下载"/>
+            </RelativeLayout>
+            
+            <RelativeLayout
+                android:id="@+id/ver_update" 
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="1dip"
+				android:background="@color/white">
+            	<TextView
+            	    android:id="@+id/ver_title" 
+					android:textSize="25sp" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip"
+					android:layout_centerVertical="true"
+					android:layout_alignParentLeft="true"
+					android:text="版本更新"/>
+                	<TextView 
+						android:id="@+id/ver_state"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_toRightOf="@id/ver_title"
+						android:layout_centerVertical="true"
+						android:textSize="15sp"
+						android:text="（已是最新版本）"/>
+                	<TextView 
+						android:id="@+id/ver_number"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_alignParentRight="true" 
+						android:layout_marginRight="15.0dip" 
+						android:layout_centerVertical="true"
+						android:textSize="15sp"
+						android:text="1.0.0"/>
+            </RelativeLayout>
+			
+            <RelativeLayout 
+                android:id="@+id/upload_log"
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="1dip"
+				android:background="@color/white">
+                <TextView
+                    android:textSize="25sp" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip"
+					android:layout_centerVertical="true"
+					android:layout_alignParentLeft="true"
+					android:text="上传本地日志"/>
+            
+                
+            </RelativeLayout>
+            
+            <RelativeLayout
+                android:id="@+id/feedback" 
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="1dip"
+				android:background="@color/white">
+            	<TextView 
+					android:textSize="25sp" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip"
+					android:layout_centerVertical="true"
+					android:layout_alignParentLeft="true"
+					android:text="意见反馈"/>
+                
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/about" 
+				android:layout_width="fill_parent"
+				android:layout_height="54dip"
+				android:layout_marginTop="1dip"
+				android:background="@color/white">
+            	<TextView 
+					android:textSize="25sp" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_marginLeft="15.0dip"
+					android:layout_centerVertical="true"
+					android:layout_alignParentLeft="true"
+					android:text="关于奔跑吧"/>
+                
+            </RelativeLayout>
+		<Button
+		    android:id="@+id/exit_login"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:paddingTop="5dip"
+		    android:paddingBottom="5dip"
+		    android:layout_marginLeft="20dip"
+		    android:layout_marginRight="20dip"
+		    android:layout_marginTop="15dip"
+		    android:layout_marginBottom="20dip"
+		    android:background="@color/red"
+		    android:text="退出"
+		    android:textSize="18sp"/>
+
+          
+      
+      
+
+</LinearLayout>
