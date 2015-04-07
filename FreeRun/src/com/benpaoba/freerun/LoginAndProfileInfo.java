@@ -47,7 +47,7 @@ import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
-@SuppressLint("HandlerLeak")
+
 public class LoginAndProfileInfo extends Activity {
 	private final String TAG = "FreeRun";
 	
@@ -122,44 +122,15 @@ public class LoginAndProfileInfo extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_profile_info);
+		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
+		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this.getApplicationContext());
 		loginDataPreference = getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
 				Context.MODE_PRIVATE);
-		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this.getApplicationContext());
 		path = this.getCacheDir().getPath();
 		logState = loginDataPreference.getBoolean(LOGSTATE, false);
 		// 初始化视图
-		
 		initViews();
 		onListenMyItemClick();
-		
-		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
-		
-		String[]  projectionId = {RunRecordTable.COLUMN_USEDTIME, 
-				RunRecordTable.COLUMN_DISTANCE};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
-						projectionId, 
-						null,
-						null, 
-						RunRecordTable.COLUMN_ID + " DESC");
-		if(null != mCursor && mCursor.getCount() >= 1) {
-			Log.d(TAG, "Cursor Position: " + mCursor.getPosition());
-			mCursor.moveToNext();
-			int usedTime = mCursor.getInt(
-					mCursor.getColumnIndex(
-							RunRecordTable.COLUMN_USEDTIME));
-			int distance = (int)mCursor.getLong(
-					mCursor.getColumnIndex(
-							RunRecordTable.COLUMN_DISTANCE));
-			float bestVel = loginDataPreference.getFloat(SPEEDMATCH, 0);
-			if(distance != 0 && bestVel < usedTime/distance) {
-				fastestSpeedMatch.setText(Math.floor(usedTime)/distance + "'" 
-						+ usedTime%distance + "\"");
-				loginDataPreference.edit().putFloat(SPEEDMATCH, usedTime/distance).commit();
-					
-			}
-			
-		}
-		
 		
 	}
 	@Override
@@ -201,6 +172,8 @@ public class LoginAndProfileInfo extends Activity {
 		handleLogin();			
 
 	}
+	
+
 
 private void  onListenMyItemClick() {
 		
@@ -298,7 +271,7 @@ private void  onListenMyItemClick() {
 			}
 		});
 	}
-	private void handleLogin()
+	public  void handleLogin()
 	{ 
 		
 		if(logState) {
@@ -326,24 +299,28 @@ private void  onListenMyItemClick() {
 					loginDataPreference.getString(TOTALCALORIES, "none"));
 			
 			//the best Record
-			fastestSpeedMatch.setText(
-					loginDataPreference.getString(SPEEDMATCH, "nothing"));
-			longestDistance.setText(
-					loginDataPreference.getString(LONGESTDISTANCE, "nothing"));
-			longestTime.setText(
-					loginDataPreference.getString(LONGESTTIME, "nothing"));
-			shortestTimeFive.setText(
-					loginDataPreference.getString(SHORTESTTIME_5, "nothing"));
-			shortestTimeTen.setText(
-					loginDataPreference.getString(SHORTESTTIME_10, "nothing"));
-			shortestTimeHalfMarathon.setText(
-					loginDataPreference.getString(SHORTESTTIME_HM, "nothing"));
-			shortestTimeFullMarathon.setText(
-					loginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
-		
+//			fastestSpeedMatch.setText(
+//					loginDataPreference.getString(SPEEDMATCH, "nothing"));
+//			longestDistance.setText(
+//					loginDataPreference.getString(LONGESTDISTANCE, "nothing"));
+//			longestTime.setText(
+//					loginDataPreference.getString(LONGESTTIME, "nothing"));
+//			shortestTimeFive.setText(
+//					loginDataPreference.getString(SHORTESTTIME_5, "nothing"));
+//			shortestTimeTen.setText(
+//					loginDataPreference.getString(SHORTESTTIME_10, "nothing"));
+//			shortestTimeHalfMarathon.setText(
+//					loginDataPreference.getString(SHORTESTTIME_HM, "nothing"));
+//			shortestTimeFullMarathon.setText(
+//					loginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
+//		
 			//the history run times
 			historyTimes.setText(
 					loginDataPreference.getInt(HISTORYTIMES, 0) + "次");
+			
+			//the best record update
+			updateTheBestRecord();
+			
 		} else {
 			Log.d(TAG, "Logout......");
 			login.setVisibility(View.GONE);
@@ -354,6 +331,180 @@ private void  onListenMyItemClick() {
 		}
 		
 	}
+	
+	public void updateTheBestRecord() {
+		
+		// update the best match velocity
+		String[]  projectionId = {RunRecordTable.COLUMN_USEDTIME, 
+				RunRecordTable.COLUMN_DISTANCE};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+						projectionId, 
+						null,
+						null, 
+						RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "Cursor Position: " + mCursor.getPosition() 
+					+ "\n the fastest match velocity");
+			mCursor.moveToNext();
+			int usedTime = mCursor.getInt(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_USEDTIME));
+			int distance = (int)mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_DISTANCE));
+			Log.d(TAG, "usedTime: " + usedTime + "; distance: " + distance + ";");
+			float bestVel = loginDataPreference.getFloat(SPEEDMATCH, Float.MAX_VALUE);
+			float newBestVel = (float)(usedTime*1000)/(distance*60);
+			if(distance != 0 && bestVel > newBestVel) {
+				Log.d(TAG, "new fastestSpeedmatch");
+				fastestSpeedMatch.setText((usedTime*1000)/(distance*60) + "'" 
+						+ (usedTime*1000)%distance + "\"");
+				loginDataPreference.edit().putLong(SPEEDMATCH, usedTime).commit();
+			}else if( bestVel != 0) {
+				int min = (int)Math.floor(bestVel);
+				int sec = (int)Math.floor((bestVel-min)*60);
+				Log.d(TAG, ": " + (bestVel - min)*60 + " : " +sec);
+				fastestSpeedMatch.setText(min + "'" + sec + "\"" );
+			}
+		}
+		
+		//update the longest distance;
+		String[] projectionDistance = {RunRecordTable.COLUMN_DISTANCE};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projectionDistance,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "the longest distance !");
+			mCursor.moveToNext();
+			long newLongestDistanceVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_DISTANCE));
+			float longestDistanceVal = loginDataPreference.getFloat(LONGESTDISTANCE, 0);
+			if(longestDistanceVal < newLongestDistanceVal ) {
+				longestDistance.setText((float)newLongestDistanceVal/1000 + "KM");
+				loginDataPreference.edit().putFloat(LONGESTDISTANCE, newLongestDistanceVal).commit();
+			} else if(longestDistanceVal != 0) {
+				longestDistance.setText((float)longestDistanceVal/1000 + "KM");
+			}
+		}
+		
+		//update the longest time;
+		String[] projectionTime = {RunRecordTable.COLUMN_USEDTIME};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projectionTime,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "the longest used time !");
+			mCursor.moveToNext();
+			long newLongestUseTimeVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_USEDTIME));
+			long longestUsedTimeVal= loginDataPreference.getLong(LONGESTTIME, 0);
+			if(longestUsedTimeVal < newLongestUseTimeVal ) { 
+				longestTime.setText(TimeFormatHelper.formatTime(newLongestUseTimeVal));
+				loginDataPreference.edit().putLong(LONGESTTIME, newLongestUseTimeVal).commit();
+			} else if (longestUsedTimeVal != 0) {
+				longestTime.setText(TimeFormatHelper.formatTime(longestUsedTimeVal));
+			}
+		}
+		
+		//update the  5Km   best record 
+		String[] projection5KmTime = {RunRecordTable.COLUMN_FIVE};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projection5KmTime,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			mCursor.moveToNext();
+			long newfiveKmShortestTimeVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_FIVE));
+			long fiveKmShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_5, Long.MAX_VALUE);
+			Log.d(TAG, "the 5KM shortest time !" 
+			+ "\n newFiveKmShortestValue = " + newfiveKmShortestTimeVal 
+			+ "; oldFiveKmShortestValue = " + fiveKmShortestTimeVal);
+			if(fiveKmShortestTimeVal > newfiveKmShortestTimeVal) { 
+				shortestTimeFive.setText(TimeFormatHelper.formatTime(newfiveKmShortestTimeVal));
+				loginDataPreference.edit().putLong(SHORTESTTIME_5, newfiveKmShortestTimeVal).commit();
+			} else if(fiveKmShortestTimeVal != Long.MAX_VALUE && fiveKmShortestTimeVal != 0) {
+				shortestTimeFive.setText(TimeFormatHelper.formatTime(fiveKmShortestTimeVal));
+			}
+		}
+		
+		//update the 10Km best record
+		String[] projection10KmTime = {RunRecordTable.COLUMN_TEN};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projection10KmTime,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "the 10KM shortest time !");
+			mCursor.moveToNext();
+			long newTenKmShortestTimeVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_TEN));
+			long tenKmShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_10, Long.MAX_VALUE);
+			if(newTenKmShortestTimeVal != 0 && tenKmShortestTimeVal > newTenKmShortestTimeVal) { 
+				shortestTimeTen.setText(TimeFormatHelper.formatTime(newTenKmShortestTimeVal));
+				loginDataPreference.edit().putLong(SHORTESTTIME_10, newTenKmShortestTimeVal).commit();
+			}else if(tenKmShortestTimeVal != Long.MAX_VALUE && tenKmShortestTimeVal != 0) {
+				shortestTimeTen.setText(TimeFormatHelper.formatTime(tenKmShortestTimeVal));
+			}
+		}
+		
+		//update the half Marathon best record
+		
+		String[] projectionHalfMarTime = {RunRecordTable.COLUMN_HALF_MAR};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projectionHalfMarTime,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "the half Marathon shortest time !");
+			mCursor.moveToNext();
+			long newHalfMarShortestTimeVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_HALF_MAR));
+			long halfMarShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_HM, 0);
+			if(newHalfMarShortestTimeVal != 0 && halfMarShortestTimeVal > newHalfMarShortestTimeVal) { 
+				shortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(newHalfMarShortestTimeVal));
+				loginDataPreference.edit().putLong(SHORTESTTIME_HM, newHalfMarShortestTimeVal).commit();
+			} else if(halfMarShortestTimeVal != 0 && halfMarShortestTimeVal != Long.MAX_VALUE) {
+				shortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(halfMarShortestTimeVal));
+			}
+		}
+		
+		//update the full Marathon best record
+		String[] projectionfullMarTime = {RunRecordTable.COLUMN_FULL_MAR};
+		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+				projectionfullMarTime,
+				null,
+				null, 
+				RunRecordTable.COLUMN_ID + " DESC");
+		if(null != mCursor && mCursor.getCount() >= 1) {
+			Log.d(TAG, "the full Marathon shortest time !");
+			mCursor.moveToNext();
+			long newFullMarShortestTimeVal = mCursor.getLong(
+					mCursor.getColumnIndex(
+							RunRecordTable.COLUMN_FULL_MAR));
+			long fullMarShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_HM, Long.MAX_VALUE);
+			if(newFullMarShortestTimeVal != 0 && fullMarShortestTimeVal > newFullMarShortestTimeVal) { 
+				shortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(newFullMarShortestTimeVal));
+				loginDataPreference.edit().putLong(SHORTESTTIME_FM, newFullMarShortestTimeVal).commit();
+			} else if (fullMarShortestTimeVal != Long.MAX_VALUE && fullMarShortestTimeVal != 0) {
+				shortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(fullMarShortestTimeVal));
+			}
+		}
+	}
+	
+	
 	
 	/**
 	 *  调用QQ登录接口
@@ -477,6 +628,7 @@ private void  onListenMyItemClick() {
 	protected void onResume() {
 		super.onResume();
 		//user simple Info
+		if(logState)
 		{
 			userIconDefault.setVisibility(View.GONE);
 			userIcon.setVisibility(View.VISIBLE);
