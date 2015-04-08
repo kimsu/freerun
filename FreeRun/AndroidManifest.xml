@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.benpaoba.freerun"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="6"
+    android:versionName="0.3" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -36,17 +36,20 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     
     <uses-permission android:name="android.permission.GET_TASKS"/>
-    
-
 
     <application
         android:name="com.benpaoba.freerun.RunningApplication"
         android:allowBackup="true"
+        android:theme="@android:style/Theme.Holo.Light"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="spzmcL3MMYZre6UvY2kUV6Pq" />
+        <meta-data android:name="UMENG_APPKEY"
+            android:value="55233badfd98c55f9d000896"/>
+        <meta-data android:name="UMENG_CHANNEL"
+            android:value="Channel ID" />
        
         <!-- QQ 接入配置 -->
         <activity
@@ -142,6 +145,14 @@
             </intent-filter>
         </activity>
         
+        <service
+            android:name="com.umeng.update.net.DownloadingService"
+            android:process=":DownloadingService" >
+        </service>
+        <activity 
+            android:name="com.umeng.update.UpdateDialogActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+        </activity>
     </application>
 
 </manifest>

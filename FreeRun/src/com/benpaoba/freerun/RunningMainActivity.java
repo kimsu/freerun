@@ -73,6 +73,9 @@ import com.baidu.mapapi.model.LatLng;
 import com.benpaoba.freerun.database.FreeRunContentProvider;
 import com.benpaoba.freerun.database.RunRecordTable;
 
+import com.umeng.update.UmengUpdateAgent;
+import com.umeng.update.UpdateConfig;
+
 public class RunningMainActivity extends Activity {
 	public static final String TAG = "RunningMap";
 	
@@ -150,6 +153,10 @@ public class RunningMainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = this;
+		UmengUpdateAgent.setDefault();
+		UmengUpdateAgent.setUpdateOnlyWifi(false); 
+		UmengUpdateAgent.update(this);
+		UpdateConfig.setDebug(true);
 		Log.d(TAG,"onCreate, id : " + Thread.currentThread().getId());
 		mDistanceInfoDao = new DistanceInfoDao(this);
 		setContentView(R.layout.layout_main);
