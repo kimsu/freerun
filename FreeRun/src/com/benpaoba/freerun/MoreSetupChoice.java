@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.tencent.tauth.Tencent;
+import com.umeng.update.UmengUpdateAgent;
 
 public class MoreSetupChoice extends Activity {
 	private final String TAG = "FreeRun";
@@ -58,8 +59,7 @@ public class MoreSetupChoice extends Activity {
 		downloadState = (TextView) findViewById(R.id.download_state);
 		verState = (TextView) findViewById(R.id.ver_state);
 		verNumber = (TextView) findViewById(R.id.ver_number);
-		
-		
+		verNumber.setText(Utils.getAppVersion(this));
 	}
 	private void onListeningItemClicked() {
 		offline_map.setOnClickListener( new OnClickListener() {
@@ -76,7 +76,8 @@ public class MoreSetupChoice extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
+				UmengUpdateAgent.setDefault();
+				UmengUpdateAgent.forceUpdate(MoreSetupChoice.this);
 			}
 		});
 		
