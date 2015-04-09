@@ -19,4 +19,9 @@
     <string name="nomarl_gps">正常</string>
     <string name="bad_gps">弱</string>
     <string name="good_gps">强</string>
+    <string name="menu_sort_down">sort_down</string>
+    <string name="menu_sort_up">sort_up</string>
+    <string name="map_DownloadCity">Downloaded City Maps</string>
+    <string name="map_allCity">All City Maps</string>
+    <string name="moreText">More ...</string>
 </resources>

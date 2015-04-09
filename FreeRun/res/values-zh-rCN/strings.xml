@@ -28,7 +28,8 @@
     <string name="menu_share">分享</string>
     <string name="share_title">最专业的跑步软件：奔跑吧</string>
     <string name="share_content">我已经使用奔跑吧跑步<xliff:g id="sports_distance">%1$s</xliff:g>公里，用了<xliff:g id="sports_usedtime_minutes">%2$d</xliff:g>分
-        <xliff:g id="sports_usedtime_seconds">%3$d</xliff:g>秒，快来一起分享吧，亲！ </string>
-    <string name="more">更多...</string>
+    <xliff:g id="sports_usedtime_seconds">%3$d</xliff:g>秒，快来一起分享吧，亲！ </string>
+    <string name="moreText">更多...</string>
+	
 
 </resources>

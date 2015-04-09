@@ -272,6 +272,7 @@
 					android:layout_height="wrap_content" 
 					android:layout_marginLeft="15.0dip" 
 					android:layout_centerVertical="true"
+					android:textColor="@color/black"
 					android:text="@string/record_history"/>
                 <ImageView 
 					android:id="@+id/common_icon_arrow" 
@@ -301,9 +302,10 @@
 					android:textSize="30sp" 
 					android:layout_width="wrap_content" 
 					android:layout_height="wrap_content" 
-					android:layout_marginLeft="15.0dip" 
+					android:layout_marginLeft="15.0dip"
+					android:textColor="@color/black" 
 					android:layout_centerVertical="true"
-					android:text="@string/more"/>
+					android:text="@string/moreText"/>
             </RelativeLayout> <!-- More setup choice ..., begin. -->        
   
 </LinearLayout>
