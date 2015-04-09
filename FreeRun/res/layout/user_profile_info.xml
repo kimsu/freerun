@@ -303,7 +303,7 @@
 					android:layout_height="wrap_content" 
 					android:layout_marginLeft="15.0dip" 
 					android:layout_centerVertical="true"
-					android:text="More ..."/>
+					android:text="@string/more"/>
             </RelativeLayout> <!-- More setup choice ..., begin. -->        
   
 </LinearLayout>

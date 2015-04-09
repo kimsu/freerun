@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
@@ -294,8 +295,8 @@ public class HistoryDetailsActivity extends Activity implements
     private void addWXPlatform() {
         // 注意：在微信授权的时候，必须传递appSecret
         // wx967daebe835fbeac是你在微信开发平台注册应用的AppID, 这里需要替换成你注册的AppID
-        String appId = "wx967daebe835fbeac";
-        String appSecret = "5bb696d9ccd75a38c8a0bfe0675559b3";
+        String appId = "wx5a20f7622f9ab2f2";
+        String appSecret = "ac0f2103ab8789fd3d3aaf4af8e4b0bc";
         // 添加微信平台
         UMWXHandler wxHandler = new UMWXHandler(this, appId, appSecret);
         wxHandler.addToSocialSDK();
@@ -337,7 +338,7 @@ public class HistoryDetailsActivity extends Activity implements
         weixinContent.setShareContent(shareContent + "--微信");
         weixinContent.setTitle(getResources().getString(R.string.share_title));
         weixinContent.setTargetUrl("http://www.umeng.com/social");
-        //weixinContent.setShareMedia(urlImage);
+        weixinContent.setShareMedia(urlImage);
         mController.setShareMedia(weixinContent);
 
         // 设置朋友圈分享的内容
@@ -452,8 +453,11 @@ public class HistoryDetailsActivity extends Activity implements
 		 
 		LatLng latLng = result.getLocation();
 		if(mBaiduMap != null) {
-		    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(
-			    result.getLocation(), DEFAULT_LEVEL));
+			MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(latLng, 
+					DEFAULT_LEVEL);
+			if(u != null) {
+		        mBaiduMap.animateMapStatus(u);
+			}
 		}
 		
 	}

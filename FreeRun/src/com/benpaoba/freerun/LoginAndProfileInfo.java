@@ -346,21 +346,21 @@ private void  onListenMyItemClick() {
 			Log.d(TAG, "Cursor Position: " + mCursor.getPosition() 
 					+ "\n the fastest match velocity");
 			mCursor.moveToNext();
-			int usedTime = mCursor.getInt(
+			long usedTime = mCursor.getInt(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_USEDTIME));
 			int distance = (int)mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_DISTANCE));
 			Log.d(TAG, "usedTime: " + usedTime + "; distance: " + distance + ";");
-			float bestVel = loginDataPreference.getFloat(SPEEDMATCH, Float.MAX_VALUE);
+			float bestVel = loginDataPreference.getLong(SPEEDMATCH, Long.MAX_VALUE);
 			float newBestVel = (float)(usedTime*1000)/(distance*60);
 			if(distance != 0 && bestVel > newBestVel) {
 				Log.d(TAG, "new fastestSpeedmatch");
 				fastestSpeedMatch.setText((usedTime*1000)/(distance*60) + "'" 
 						+ (usedTime*1000)%distance + "\"");
 				loginDataPreference.edit().putLong(SPEEDMATCH, usedTime).commit();
-			}else if( bestVel != 0) {
+			}else if( bestVel != 0 && bestVel != Float.MAX_VALUE) {
 				int min = (int)Math.floor(bestVel);
 				int sec = (int)Math.floor((bestVel-min)*60);
 				Log.d(TAG, ": " + (bestVel - min)*60 + " : " +sec);
@@ -806,7 +806,11 @@ private void  onListenMyItemClick() {
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 			// TODO Auto-generated method stub
-			Log.d(TAG, "LoaderManager: onLoadFinished()");
+			Log.d(TAG, "LoaderManager: onLoadFinished(), cursor.getCount = " + cursor.getCount());
+			historyTimes.setText(
+					cursor.getCount() + "´Î");
+			loginDataPreference.edit().putInt(HISTORYTIMES, cursor.getCount()).commit();
+			
 		}
 		
 		//This callback lets you find out when the data is about to be released 

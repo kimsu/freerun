@@ -60,6 +60,7 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.MapStatusUpdate;
@@ -213,6 +214,7 @@ public class RunningMainActivity extends Activity {
 	 	Log.d(TAG,"onCreate(), height: " + mMapView.getHeight());
 	 	// ¿ªÆô¶¨Î»Í¼²ã
 	 	mBaiduMap.setMyLocationEnabled(true);
+	 	mBaiduMap.setOnMapLoadedCallback(mMapLoadedCallback);
 	 	//startService(new Intent(this, LocationService.class));
 	 	mLocationListener = new CustomLocationListenner();
         mLocClient = new LocationClient(this);
@@ -227,6 +229,16 @@ public class RunningMainActivity extends Activity {
         mLocClient.start();
         mLocClient.requestLocation();
 	}
+	
+	private BaiduMap.OnMapLoadedCallback mMapLoadedCallback = new BaiduMap.OnMapLoadedCallback(){
+
+		@Override
+		public void onMapLoaded() {
+			// TODO Auto-generated method stub
+			Log.d(TAG,"RunningMainActivity, onMapLoaded()");
+		}
+	};
+	
 	
 	private int mUsedSatellitesCount = 0;
 	private final GpsStatus.Listener mGpsStatusListener = new GpsStatus.Listener() {
@@ -381,6 +393,7 @@ public class RunningMainActivity extends Activity {
 				    configOrientalOrHorizontalLayout(true);
 				    Log.d(TAG,"bmap onclick, height: " + mMapView.getHeight());
 				    mIsBaiduMapFullScreen = true;
+				    
 				}else {
 					mViewRunControllerLayout.setVisibility(View.VISIBLE);
 				    mOtherDetailsLayout.setVisibility(View.VISIBLE);
@@ -445,6 +458,9 @@ public class RunningMainActivity extends Activity {
 		Log.d("yxf","mInsertUri = " + mInsertUri);
 		mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
 				+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
+		if(mSaveFile.exists()) {
+			mSaveFile.delete();
+		}
 		startTimer();
     }
     
