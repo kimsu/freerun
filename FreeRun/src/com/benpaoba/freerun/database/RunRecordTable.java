@@ -25,7 +25,8 @@ public class RunRecordTable {
 	    		+ COLUMN_ST + " LONG, " 
 	    		+ COLUMN_DISTANCE + " DOUBLE, " 
 	    		+ COLUMN_USEDTIME + " LONG, " 
-	    		+ COLUMN_FIVE + " INTEGER, " 
+	    		+ COLUMN_COSTENERGY + " LONG, "
+	    		+ COLUMN_FIVE + " LONG, " 
 	    		+ COLUMN_TEN + " LONG, " 
 	    		+ COLUMN_HALF_MAR + " LONG, " 
 	    		+ COLUMN_FULL_MAR + " LONG );";

@@ -179,7 +179,8 @@ public class FreeRunContentProvider extends ContentProvider {
 	            RunRecordTable.COLUMN_TEN,
 	            RunRecordTable.COLUMN_HALF_MAR,
 	            RunRecordTable.COLUMN_FULL_MAR,
-	            RunRecordTable.COLUMN_USEDTIME};
+	            RunRecordTable.COLUMN_USEDTIME,
+	            RunRecordTable.COLUMN_COSTENERGY};
 		
 		if(projection != null) {
 			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));

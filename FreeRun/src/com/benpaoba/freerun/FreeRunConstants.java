@@ -9,6 +9,9 @@ public class FreeRunConstants {
 	public static final String APP_ID = "1104450496";
 	public static final String PROFILE_INFO_PREFERENCES = "user_profile_info_preference";
 	
+	
+	public static final String EXIT_LOGIN = "exit_login"; 
+	
 	public static final String[] LOCATION = {
 		"北京",
 		"上海",

@@ -51,68 +51,73 @@ import com.tencent.tauth.UiError;
 public class LoginAndProfileInfo extends Activity {
 	private final String TAG = "FreeRun";
 	
-	private boolean logState = false;
+	private boolean mLogState = false;
 	
-	private AlertDialog alert;
+	private AlertDialog mAlert;
 	public  static Tencent mTencent;
 	
 	//the simple User Info
-	private LinearLayout userSummaryInfo;
-	private ImageView  userIcon;
-	private LinearLayout login;
-	private LinearLayout logout;
-	private TextView userNickname;
-	private TextView editInfo;
-	private TextView totalDistance;
-	private TextView totalTime;
-	private TextView totalCalories;
+	private LinearLayout mUserSummaryInfo;
+	private ImageView  mUserIcon;
+	private LinearLayout mLogin;
+	private LinearLayout mLogout;
+	private TextView mUserNickname;
+	private TextView mEditInfo;
+	private TextView mTotalDistance;
+	private TextView mTotalTime;
+	private TextView mTotalCalories;
+	
+	private long mTotalDistanceVal = 0;
+	private long mTotalTimeVal = 0;
+	private long mTotalCaloriesVal = 0;
 	
 	// total info item for preference
-	 static final String LOGSTATE = "log_state";
+	public static final String LOGSTATE = "log_state";
 	 static final String NICKNAME = "nickname";
 	 static final String TOTALDISTANCE = "total_distance";
 	 static final String TOTALTIME = "total_time";
 	 static final String TOTALCALORIES = "total_calories";
+	 static final String WELCOMED = "welcomed";
 	 
 	 
 	
 	//The best Record
-	private	TextView fastestSpeedMatch;
-	private	TextView longestDistance;
-	private	TextView longestTime;
-	private	TextView shortestTimeFive;
-	private TextView shortestTimeTen;
-	private TextView shortestTimeHalfMarathon;
-	private TextView shortestTimeFullMarathon;
+	private	TextView mFastestSpeedMatch;
+	private	TextView mLogestDistance;
+	private	TextView mLongestTime;
+	private	TextView mShortestTimeFive;
+	private TextView mShortestTimeTen;
+	private TextView mShortestTimeHalfMarathon;
+	private TextView mShortestTimeFullMarathon;
 	
 	//the Run History Record
-	private RelativeLayout checkHistoryRecord;
-	private TextView historyTimes;
+	private RelativeLayout mCheckHistoryRecord;
+	private TextView mFrequencies;
 	
 	static final String HISTORYTIMES = "run_history_times";
 
 	protected static final String ICON = "user_icon";
 	//More setup Choice
-	private RelativeLayout moreSetup;
+	private RelativeLayout mMoreSetup;
 	
 	//The best Record Item name, Used in Preference
 	private final String SPEEDMATCH = "speed_match";
 	private final String LONGESTDISTANCE = "longestDistance";
 	private final String LONGESTTIME = "longestTime";
 	private final String SHORTESTTIME_5 = "shortestTimefive";
-	private final String SHORTESTTIME_10 = "shortestTimeTen";
-	private final String SHORTESTTIME_HM = "shortestTimeHalfMarathon";
-	private final String SHORTESTTIME_FM = "shortestTimeFullMarathon";
+	private final String SHORTESTTIME_10 = "mShortestTimeTen";
+	private final String SHORTESTTIME_HM = "mShortestTimeHalfMarathon";
+	private final String SHORTESTTIME_FM = "mShortestTimeFullMarathon";
 	
 	 
 	
-	private SharedPreferences loginDataPreference;
+	private static SharedPreferences mLoginDataPreference;
 	
 	private UserInfo mInfo;
 
-	private ImageView userIconDefault;
-	private static String path;
-	private AlertDialog.Builder builder;
+	private ImageView mUserIconDefault;
+	private static String mPath;
+	private AlertDialog.Builder mBuilder;
 	
 	private Cursor mCursor;
 	
@@ -124,14 +129,13 @@ public class LoginAndProfileInfo extends Activity {
 		setContentView(R.layout.user_profile_info);
 		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
 		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this.getApplicationContext());
-		loginDataPreference = getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
+		mLoginDataPreference = getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
 				Context.MODE_PRIVATE);
-		path = this.getCacheDir().getPath();
-		logState = loginDataPreference.getBoolean(LOGSTATE, false);
+		mPath = this.getCacheDir().getPath();
+		mLogState = mLoginDataPreference.getBoolean(LOGSTATE, false);
 		// 初始化视图
 		initViews();
 		onListenMyItemClick();
-		
 	}
 	@Override
 	protected void onStart() {
@@ -143,32 +147,32 @@ public class LoginAndProfileInfo extends Activity {
 	
 	private void initViews() {
 		
-		userSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
-		userIcon = (ImageView)findViewById(R.id.img_user_avatar);
-		userIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
-		login = (LinearLayout)findViewById(R.id.login);
-		logout = (LinearLayout)findViewById(R.id.logout);
-		editInfo = (TextView)findViewById(R.id.info_edit);
-		userNickname = (TextView)findViewById(R.id.pro_nickname);
-		totalDistance = (TextView)findViewById(R.id.total_distance);
-		totalTime = (TextView)findViewById(R.id.total_time);
-		totalCalories = (TextView)findViewById(R.id.total_calories);
+		mUserSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
+		mUserIcon = (ImageView)findViewById(R.id.img_user_avatar);
+		mUserIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
+		mLogin = (LinearLayout)findViewById(R.id.login);
+		mLogout = (LinearLayout)findViewById(R.id.logout);
+		mEditInfo = (TextView)findViewById(R.id.info_edit);
+		mUserNickname = (TextView)findViewById(R.id.pro_nickname);
+		mTotalDistance = (TextView)findViewById(R.id.total_distance);
+		mTotalTime = (TextView)findViewById(R.id.total_time);
+		mTotalCalories = (TextView)findViewById(R.id.total_calories);
 
 		//handle the bestest history record. Start.
-		fastestSpeedMatch = (TextView)findViewById(R.id.fastest_speed_match);
-		longestDistance = (TextView)findViewById(R.id.longest_distance);
-		longestTime = (TextView)findViewById(R.id.longest_time);
-		shortestTimeFive = (TextView)findViewById(R.id.shortest_time_five);
-		shortestTimeTen = (TextView)findViewById(R.id.shortest_time_ten);
-		shortestTimeHalfMarathon = (TextView)findViewById(R.id.shortest_time_half_marathon);
-		shortestTimeFullMarathon = (TextView)findViewById(R.id.shortest_time_full_marathon);
+		mFastestSpeedMatch = (TextView)findViewById(R.id.fastest_speed_match);
+		mLogestDistance = (TextView)findViewById(R.id.longest_distance);
+		mLongestTime = (TextView)findViewById(R.id.longest_time);
+		mShortestTimeFive = (TextView)findViewById(R.id.shortest_time_five);
+		mShortestTimeTen = (TextView)findViewById(R.id.shortest_time_ten);
+		mShortestTimeHalfMarathon = (TextView)findViewById(R.id.shortest_time_half_marathon);
+		mShortestTimeFullMarathon = (TextView)findViewById(R.id.shortest_time_full_marathon);
 		
 		//run history record
-		historyTimes = (TextView)findViewById(R.id.record_history_times);
-		checkHistoryRecord = (RelativeLayout) findViewById(R.id.run_history);
+		mFrequencies = (TextView)findViewById(R.id.record_history_times);
+		mCheckHistoryRecord = (RelativeLayout) findViewById(R.id.run_history);
 		
 		//More setup
-		moreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
+		mMoreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
 		handleLogin();			
 
 	}
@@ -178,24 +182,24 @@ public class LoginAndProfileInfo extends Activity {
 private void  onListenMyItemClick() {
 		
 		// show Login dialog
-		userSummaryInfo.setOnClickListener(new OnClickListener() {
+		mUserSummaryInfo.setOnClickListener(new OnClickListener() {
 		@Override
 		public void onClick(View v) {
 				// TODO Auto-generated method stub
 			//Login Dialog 
-			builder = new AlertDialog.Builder(LoginAndProfileInfo.this);
-			if(false == logState) {
-				builder.setMessage("Do you want to login ?")
+			mBuilder = new AlertDialog.Builder(LoginAndProfileInfo.this);
+			if(false == mLogState) {
+				mBuilder.setMessage("Do you want to mLogin ?")
 				   .setCancelable(false)
 				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int id) {
 				        	Log.d(TAG, "\n======  LONIN START  ============");
-					            	logState = true;
-					    			loginDataPreference
+					            	mLogState = true;
+					    			mLoginDataPreference
 					            	.edit()
 					            		.putBoolean(LOGSTATE, true)
 					            			.commit();
-					    			login();
+					    			mLogin();
 					           }
 					     })
 					.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -206,14 +210,14 @@ private void  onListenMyItemClick() {
 						});
 			}
 //			else {
-//				builder.setMessage("Do you want to Logout ?")
+//				mBuilder.setMessage("Do you want to Logout ?")
 //				   .setCancelable(false)
 //				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 //				        public void onClick(DialogInterface dialog, int id) {
 //				        	Log.d(TAG, "\n======  LOGOUT END  ============");
 //							logout();
-//							logState = false;
-//							loginDataPreference
+//							mLogState = false;
+//							mLoginDataPreference
 //			            	.edit()
 //			            		.putBoolean(LOGSTATE, false)
 //			            			.commit();
@@ -228,15 +232,15 @@ private void  onListenMyItemClick() {
 //					});
 //			}
 			
-			builder.create()
+			mBuilder.create()
 					.show();
-				 //alert = builder.create();
+				 //alert = mBuilder.create();
 				 //alert.show();
 		}
 		});
 		
 		//Enter Edit user Info Activity
-		editInfo.setOnClickListener(new OnClickListener() {
+		mEditInfo.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -248,7 +252,7 @@ private void  onListenMyItemClick() {
 		});
 		
 		//Enter check history record Activity
-		checkHistoryRecord.setOnClickListener(new OnClickListener() {
+		mCheckHistoryRecord.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -260,7 +264,7 @@ private void  onListenMyItemClick() {
 		});
 		
 		//Enter More setup choice Activity
-		moreSetup.setOnClickListener(new OnClickListener() {
+		mMoreSetup.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -274,59 +278,59 @@ private void  onListenMyItemClick() {
 	public  void handleLogin()
 	{ 
 		
-		if(logState) {
+		if(mLogState) {
 			Log.d(TAG, "Login .......");
-			//userIcon.setImageResource(R.id.user_icon);
-			logout.setVisibility(View.GONE);
-			login.setVisibility(View.VISIBLE);
+			//mUserIcon.setImageResource(R.id.user_icon);
+			mLogout.setVisibility(View.GONE);
+			mLogin.setVisibility(View.VISIBLE);
 			
 			//user simple Info
 			{
-				userIconDefault.setVisibility(View.GONE);
-				userIcon.setVisibility(View.VISIBLE);
+				mUserIconDefault.setVisibility(View.GONE);
+				mUserIcon.setVisibility(View.VISIBLE);
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inSampleSize = 1;
-				Bitmap bm = BitmapFactory.decodeFile(path + "/" + ICON, options);
-				userIcon.setImageBitmap(bm);
+				Bitmap bm = BitmapFactory.decodeFile(mPath + "/" + ICON, options);
+				mUserIcon.setImageBitmap(bm);
 			}
-			userNickname.setText(
-					loginDataPreference.getString(NICKNAME, "Vistor"));
-			totalDistance.setText(
-					loginDataPreference.getString(TOTALDISTANCE, "none"));
-			totalTime.setText(
-					loginDataPreference.getString(TOTALTIME, "none"));
-			totalCalories.setText(
-					loginDataPreference.getString(TOTALCALORIES, "none"));
+			mUserNickname.setText(
+					mLoginDataPreference.getString(NICKNAME, "Vistor"));
+			mTotalDistance.setText(
+					mLoginDataPreference.getString(TOTALDISTANCE, "none"));
+			mTotalTime.setText(
+					mLoginDataPreference.getString(TOTALTIME, "none"));
+			mTotalCalories.setText(
+					mLoginDataPreference.getString(TOTALCALORIES, "none"));
 			
 			//the best Record
-//			fastestSpeedMatch.setText(
-//					loginDataPreference.getString(SPEEDMATCH, "nothing"));
-//			longestDistance.setText(
-//					loginDataPreference.getString(LONGESTDISTANCE, "nothing"));
-//			longestTime.setText(
-//					loginDataPreference.getString(LONGESTTIME, "nothing"));
-//			shortestTimeFive.setText(
-//					loginDataPreference.getString(SHORTESTTIME_5, "nothing"));
-//			shortestTimeTen.setText(
-//					loginDataPreference.getString(SHORTESTTIME_10, "nothing"));
-//			shortestTimeHalfMarathon.setText(
-//					loginDataPreference.getString(SHORTESTTIME_HM, "nothing"));
-//			shortestTimeFullMarathon.setText(
-//					loginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
+//			mFastestSpeedMatch.setText(
+//					mLoginDataPreference.getString(SPEEDMATCH, "nothing"));
+//			mLogestDistance.setText(
+//					mLoginDataPreference.getString(LONGESTDISTANCE, "nothing"));
+//			mLongestTime.setText(
+//					mLoginDataPreference.getString(LONGESTTIME, "nothing"));
+//			mShortestTimeFive.setText(
+//					mLoginDataPreference.getString(SHORTESTTIME_5, "nothing"));
+//			mShortestTimeTen.setText(
+//					mLoginDataPreference.getString(SHORTESTTIME_10, "nothing"));
+//			mShortestTimeHalfMarathon.setText(
+//					mLoginDataPreference.getString(SHORTESTTIME_HM, "nothing"));
+//			mShortestTimeFullMarathon.setText(
+//					mLoginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
 //		
 			//the history run times
-			historyTimes.setText(
-					loginDataPreference.getInt(HISTORYTIMES, 0) + "次");
+			mFrequencies.setText(
+					mLoginDataPreference.getInt(HISTORYTIMES, 0) + "次");
 			
 			//the best record update
 			updateTheBestRecord();
 			
 		} else {
 			Log.d(TAG, "Logout......");
-			login.setVisibility(View.GONE);
-			logout.setVisibility(View.VISIBLE);
-			userIcon.setVisibility(View.GONE);
-			userIconDefault.setVisibility(View.VISIBLE);
+			mLogin.setVisibility(View.GONE);
+			mLogout.setVisibility(View.VISIBLE);
+			mUserIcon.setVisibility(View.GONE);
+			mUserIconDefault.setVisibility(View.VISIBLE);
 			
 		}
 		
@@ -336,37 +340,60 @@ private void  onListenMyItemClick() {
 		
 		// update the best match velocity
 		String[]  projectionId = {RunRecordTable.COLUMN_USEDTIME, 
-				RunRecordTable.COLUMN_DISTANCE};
+				RunRecordTable.COLUMN_DISTANCE, RunRecordTable.COLUMN_COSTENERGY};
 		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 						projectionId, 
 						null,
 						null, 
 						RunRecordTable.COLUMN_ID + " DESC");
 		if(null != mCursor && mCursor.getCount() >= 1) {
+			long newUsedTime = 0;
+			long newDistance = 0;
+			int timeColumn = 0;
+			int distanceColumn = 0;
+//			int energyColumn = 0;
+
 			Log.d(TAG, "Cursor Position: " + mCursor.getPosition() 
 					+ "\n the fastest match velocity");
-			mCursor.moveToNext();
-			long usedTime = mCursor.getInt(
-					mCursor.getColumnIndex(
-							RunRecordTable.COLUMN_USEDTIME));
-			int distance = (int)mCursor.getLong(
-					mCursor.getColumnIndex(
-							RunRecordTable.COLUMN_DISTANCE));
-			Log.d(TAG, "usedTime: " + usedTime + "; distance: " + distance + ";");
-			float bestVel = loginDataPreference.getLong(SPEEDMATCH, Long.MAX_VALUE);
-			float newBestVel = (float)(usedTime*1000)/(distance*60);
-			if(distance != 0 && bestVel > newBestVel) {
+			if(mCursor.moveToFirst()) {
+				timeColumn = mCursor.getColumnIndex(RunRecordTable.COLUMN_USEDTIME);
+				newUsedTime = mCursor.getLong( timeColumn );
+				distanceColumn = mCursor.getColumnIndex(RunRecordTable.COLUMN_DISTANCE);
+				newDistance = mCursor.getLong(distanceColumn);
+//				energyColumn = mCursor.getColumnIndex(RunRecordTable.COLUMN_COSTENERGY);
+				
+				//update the run frequencies
+				mFrequencies.setText(mCursor.getCount() + "次");
+					
+
+				 
+				do {
+					mTotalTimeVal = mTotalTimeVal + mCursor.getLong( timeColumn );
+					mTotalDistanceVal = mTotalDistanceVal +  mCursor.getLong(distanceColumn);
+//					mTotalCaloriesVal = mTotalCaloriesVal + mCursor.getLong(energyColumn);
+				}while(mCursor.moveToNext());
+				mTotalTime.setText(TimeFormatHelper.formatTime(mTotalTimeVal));
+				mTotalDistance.setText(mTotalDistanceVal/1000 + "KM");
+//				mTotalCalories.setText( mTotalCaloriesVal + "J");
+			}
+			
+			Log.d(TAG, "newUsedTime: " + newUsedTime + "; newDistance: " + newDistance + ";");
+			float bestVel = mLoginDataPreference.getFloat(SPEEDMATCH, Float.MAX_VALUE);
+			float newBestVel = (float)(newUsedTime*1000)/(newDistance*60);
+			if(newDistance != 0 && bestVel > newBestVel) {
 				Log.d(TAG, "new fastestSpeedmatch");
-				fastestSpeedMatch.setText((usedTime*1000)/(distance*60) + "'" 
-						+ (usedTime*1000)%distance + "\"");
-				loginDataPreference.edit().putLong(SPEEDMATCH, usedTime).commit();
-			}else if( bestVel != 0 && bestVel != Float.MAX_VALUE) {
+				mFastestSpeedMatch.setText((newUsedTime*1000)/(newDistance*60) + "'" 
+						+ (newUsedTime*1000)%newDistance + "\"");
+				mLoginDataPreference.edit().putFloat(SPEEDMATCH, newBestVel).commit();
+			}else if( bestVel != Float.MAX_VALUE && bestVel != 0) {
 				int min = (int)Math.floor(bestVel);
 				int sec = (int)Math.floor((bestVel-min)*60);
 				Log.d(TAG, ": " + (bestVel - min)*60 + " : " +sec);
-				fastestSpeedMatch.setText(min + "'" + sec + "\"" );
+				mFastestSpeedMatch.setText(min + "'" + sec + "\"" );
 			}
 		}
+		
+		
 		
 		//update the longest distance;
 		String[] projectionDistance = {RunRecordTable.COLUMN_DISTANCE};
@@ -381,12 +408,12 @@ private void  onListenMyItemClick() {
 			long newLongestDistanceVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_DISTANCE));
-			float longestDistanceVal = loginDataPreference.getFloat(LONGESTDISTANCE, 0);
+			float longestDistanceVal = mLoginDataPreference.getFloat(LONGESTDISTANCE, 0);
 			if(longestDistanceVal < newLongestDistanceVal ) {
-				longestDistance.setText((float)newLongestDistanceVal/1000 + "KM");
-				loginDataPreference.edit().putFloat(LONGESTDISTANCE, newLongestDistanceVal).commit();
+				mLogestDistance.setText((float)newLongestDistanceVal/1000 + "KM");
+				mLoginDataPreference.edit().putFloat(LONGESTDISTANCE, newLongestDistanceVal).commit();
 			} else if(longestDistanceVal != 0) {
-				longestDistance.setText((float)longestDistanceVal/1000 + "KM");
+				mLogestDistance.setText((float)longestDistanceVal/1000 + "KM");
 			}
 		}
 		
@@ -403,12 +430,12 @@ private void  onListenMyItemClick() {
 			long newLongestUseTimeVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_USEDTIME));
-			long longestUsedTimeVal= loginDataPreference.getLong(LONGESTTIME, 0);
+			long longestUsedTimeVal= mLoginDataPreference.getLong(LONGESTTIME, 0);
 			if(longestUsedTimeVal < newLongestUseTimeVal ) { 
-				longestTime.setText(TimeFormatHelper.formatTime(newLongestUseTimeVal));
-				loginDataPreference.edit().putLong(LONGESTTIME, newLongestUseTimeVal).commit();
+				mLongestTime.setText(TimeFormatHelper.formatTime(newLongestUseTimeVal));
+				mLoginDataPreference.edit().putLong(LONGESTTIME, newLongestUseTimeVal).commit();
 			} else if (longestUsedTimeVal != 0) {
-				longestTime.setText(TimeFormatHelper.formatTime(longestUsedTimeVal));
+				mLongestTime.setText(TimeFormatHelper.formatTime(longestUsedTimeVal));
 			}
 		}
 		
@@ -424,15 +451,15 @@ private void  onListenMyItemClick() {
 			long newfiveKmShortestTimeVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_FIVE));
-			long fiveKmShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_5, Long.MAX_VALUE);
+			long fiveKmShortestTimeVal= mLoginDataPreference.getLong(SHORTESTTIME_5, Long.MAX_VALUE);
 			Log.d(TAG, "the 5KM shortest time !" 
 			+ "\n newFiveKmShortestValue = " + newfiveKmShortestTimeVal 
 			+ "; oldFiveKmShortestValue = " + fiveKmShortestTimeVal);
 			if(fiveKmShortestTimeVal > newfiveKmShortestTimeVal) { 
-				shortestTimeFive.setText(TimeFormatHelper.formatTime(newfiveKmShortestTimeVal));
-				loginDataPreference.edit().putLong(SHORTESTTIME_5, newfiveKmShortestTimeVal).commit();
+				mShortestTimeFive.setText(TimeFormatHelper.formatTime(newfiveKmShortestTimeVal));
+				mLoginDataPreference.edit().putLong(SHORTESTTIME_5, newfiveKmShortestTimeVal).commit();
 			} else if(fiveKmShortestTimeVal != Long.MAX_VALUE && fiveKmShortestTimeVal != 0) {
-				shortestTimeFive.setText(TimeFormatHelper.formatTime(fiveKmShortestTimeVal));
+				mShortestTimeFive.setText(TimeFormatHelper.formatTime(fiveKmShortestTimeVal));
 			}
 		}
 		
@@ -449,12 +476,12 @@ private void  onListenMyItemClick() {
 			long newTenKmShortestTimeVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_TEN));
-			long tenKmShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_10, Long.MAX_VALUE);
+			long tenKmShortestTimeVal= mLoginDataPreference.getLong(SHORTESTTIME_10, Long.MAX_VALUE);
 			if(newTenKmShortestTimeVal != 0 && tenKmShortestTimeVal > newTenKmShortestTimeVal) { 
-				shortestTimeTen.setText(TimeFormatHelper.formatTime(newTenKmShortestTimeVal));
-				loginDataPreference.edit().putLong(SHORTESTTIME_10, newTenKmShortestTimeVal).commit();
+				mShortestTimeTen.setText(TimeFormatHelper.formatTime(newTenKmShortestTimeVal));
+				mLoginDataPreference.edit().putLong(SHORTESTTIME_10, newTenKmShortestTimeVal).commit();
 			}else if(tenKmShortestTimeVal != Long.MAX_VALUE && tenKmShortestTimeVal != 0) {
-				shortestTimeTen.setText(TimeFormatHelper.formatTime(tenKmShortestTimeVal));
+				mShortestTimeTen.setText(TimeFormatHelper.formatTime(tenKmShortestTimeVal));
 			}
 		}
 		
@@ -472,12 +499,12 @@ private void  onListenMyItemClick() {
 			long newHalfMarShortestTimeVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_HALF_MAR));
-			long halfMarShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_HM, 0);
+			long halfMarShortestTimeVal= mLoginDataPreference.getLong(SHORTESTTIME_HM, 0);
 			if(newHalfMarShortestTimeVal != 0 && halfMarShortestTimeVal > newHalfMarShortestTimeVal) { 
-				shortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(newHalfMarShortestTimeVal));
-				loginDataPreference.edit().putLong(SHORTESTTIME_HM, newHalfMarShortestTimeVal).commit();
+				mShortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(newHalfMarShortestTimeVal));
+				mLoginDataPreference.edit().putLong(SHORTESTTIME_HM, newHalfMarShortestTimeVal).commit();
 			} else if(halfMarShortestTimeVal != 0 && halfMarShortestTimeVal != Long.MAX_VALUE) {
-				shortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(halfMarShortestTimeVal));
+				mShortestTimeHalfMarathon.setText(TimeFormatHelper.formatTime(halfMarShortestTimeVal));
 			}
 		}
 		
@@ -494,12 +521,12 @@ private void  onListenMyItemClick() {
 			long newFullMarShortestTimeVal = mCursor.getLong(
 					mCursor.getColumnIndex(
 							RunRecordTable.COLUMN_FULL_MAR));
-			long fullMarShortestTimeVal= loginDataPreference.getLong(SHORTESTTIME_HM, Long.MAX_VALUE);
+			long fullMarShortestTimeVal= mLoginDataPreference.getLong(SHORTESTTIME_HM, Long.MAX_VALUE);
 			if(newFullMarShortestTimeVal != 0 && fullMarShortestTimeVal > newFullMarShortestTimeVal) { 
-				shortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(newFullMarShortestTimeVal));
-				loginDataPreference.edit().putLong(SHORTESTTIME_FM, newFullMarShortestTimeVal).commit();
+				mShortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(newFullMarShortestTimeVal));
+				mLoginDataPreference.edit().putLong(SHORTESTTIME_FM, newFullMarShortestTimeVal).commit();
 			} else if (fullMarShortestTimeVal != Long.MAX_VALUE && fullMarShortestTimeVal != 0) {
-				shortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(fullMarShortestTimeVal));
+				mShortestTimeFullMarathon.setText(TimeFormatHelper.formatTime(fullMarShortestTimeVal));
 			}
 		}
 	}
@@ -510,7 +537,7 @@ private void  onListenMyItemClick() {
 	 *  调用QQ登录接口
 	 * **/
 	
-	public void login()
+	public void mLogin()
 	{
 		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this);
 		Log.d(TAG, "Login(): mTencent.isSessionVaild = " + mTencent.isSessionValid() + 
@@ -576,14 +603,14 @@ private void  onListenMyItemClick() {
 			};
 			mInfo = new UserInfo(this, mTencent.getQQToken());
 			mInfo.getUserInfo(listener);
-			//show the user personal login info.
+			//show the user personal mLogin info.
         	handleLogin();
 
 		} else {
 			Log.d(TAG, "isSessionVaild =false, Don't Login." );
-			userNickname.setText("");
-			userNickname.setVisibility(android.view.View.GONE);
-			userIcon.setVisibility(android.view.View.GONE);
+			mUserNickname.setText("");
+			mUserNickname.setVisibility(android.view.View.GONE);
+			mUserIcon.setVisibility(android.view.View.GONE);
 		}
 	}
 
@@ -594,8 +621,8 @@ private void  onListenMyItemClick() {
 				JSONObject response = (JSONObject) msg.obj;
 				if (response.has("nickname")) {
 					try {
-						userNickname.setText(response.getString("nickname"));
-						loginDataPreference
+						mUserNickname.setText(response.getString("nickname"));
+						mLoginDataPreference
 						.edit()
 						.putString(NICKNAME, response.getString("nickname"))
 						.commit();
@@ -605,7 +632,7 @@ private void  onListenMyItemClick() {
 				}
 			}else if(msg.what == 1){
 				Bitmap bitmap = (Bitmap)msg.obj;
-				userIcon.setImageBitmap(bitmap);
+				mUserIcon.setImageBitmap(bitmap);
 				if(bitmap != null ) {
 					Log.d(TAG, bitmap.toString());
 				}else {
@@ -614,7 +641,7 @@ private void  onListenMyItemClick() {
 				
 				
 				try {
-					saveBitmapToFile(bitmap, path + "/" + ICON);
+					saveBitmapToFile(bitmap, mPath + "/" + ICON);
 				}catch(IOException e) {
 					Log.e(TAG, "==>Error: " + e.getMessage());
 					e.printStackTrace();
@@ -628,14 +655,14 @@ private void  onListenMyItemClick() {
 	protected void onResume() {
 		super.onResume();
 		//user simple Info
-		if(logState)
+		if(mLogState)
 		{
-			userIconDefault.setVisibility(View.GONE);
-			userIcon.setVisibility(View.VISIBLE);
+			mUserIconDefault.setVisibility(View.GONE);
+			mUserIcon.setVisibility(View.VISIBLE);
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = 1;
-			Bitmap bm = BitmapFactory.decodeFile(path + "/" + ICON, options);
-			userIcon.setImageBitmap(bm);
+			Bitmap bm = BitmapFactory.decodeFile(mPath + "/" + ICON, options);
+			mUserIcon.setImageBitmap(bm);
 		}
 		
 	}
@@ -711,8 +738,11 @@ private void  onListenMyItemClick() {
 			//Utils.showResultDialog(LoginAndProfileInfo.this, response.toString(), "登录成功");
             // 有奖分享处理
             // handlePrizeShare();
-            MyLoginPromptDialog dialongPrompt = new MyLoginPromptDialog();
-    		dialongPrompt.show(getFragmentManager(), "MyLoginPromptDialog");
+            if(!mLoginDataPreference.getBoolean(WELCOMED, false)) {
+            	MyLoginPromptDialog dialongPrompt = new MyLoginPromptDialog();
+        		dialongPrompt.show(getFragmentManager(), "MyLoginPromptDialog");
+            }
+            
 			doComplete((JSONObject)response);
 		}
 
@@ -806,11 +836,7 @@ private void  onListenMyItemClick() {
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 			// TODO Auto-generated method stub
-			Log.d(TAG, "LoaderManager: onLoadFinished(), cursor.getCount = " + cursor.getCount());
-			historyTimes.setText(
-					cursor.getCount() + "次");
-			loginDataPreference.edit().putInt(HISTORYTIMES, cursor.getCount()).commit();
-			
+			Log.d(TAG, "LoaderManager: onLoadFinished()");
 		}
 		
 		//This callback lets you find out when the data is about to be released 
@@ -831,6 +857,7 @@ private void  onListenMyItemClick() {
     	public void onCreate(Bundle savedInstanceState) {
     		// TODO Auto-generated method stub
     		super.onCreate(savedInstanceState);
+    		setStyle(STYLE_NORMAL, android.R.style.Theme_Holo_Dialog);
     	}
     	
     	@Override
@@ -845,8 +872,10 @@ private void  onListenMyItemClick() {
     	public void onActivityCreated(Bundle savedInstanceState) {
     		// TODO Auto-generated method stub
     		getDialog().setTitle("开始使用吧！");
-    		Button editInfo = (Button) view.findViewById(R.id.editInfo);
-    		editInfo.setOnClickListener(new OnClickListener() {
+    		
+    		
+    		Button mEditInfo = (Button) view.findViewById(R.id.editInfo);
+    		mEditInfo.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
@@ -868,6 +897,7 @@ private void  onListenMyItemClick() {
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
 					Log.d(TAG, "MyLoginPromtDialog: dismiss()");
+					mLoginDataPreference.edit().putBoolean(WELCOMED, true).commit();
 					getDialog().dismiss();
 				}
 			});
