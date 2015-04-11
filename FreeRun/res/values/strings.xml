@@ -9,9 +9,9 @@
     <string name="status_finished">结束</string>
     <string name="status_continue">继续</string>
     <string name="title_activity_walking_process">WalkingProcess</string>
-	<string name="nothing"></string>
-	<string name="image_arrow">Arrow image</string>
-	<string name="open_gps_message">为了提供更精确的记录，请打开GPS并选择\“高精确度\”模式，否则无法记录数据。</string>
+    <string name="nothing"></string>
+    <string name="image_arrow">Arrow image</string>
+    <string name="open_gps_message">为了提供更精确的记录，请打开GPS并选择\“高精确度\”模式，否则无法记录数据。</string>
     <string name="button_ok">确定</string>
     <string name="button_cancel">取消</string>
     <string name="gps_signal_text">GPS信号: <xliff:g id="gps_signal_strength">%1$s</xliff:g> </string>
@@ -24,5 +24,9 @@
     <string name="map_DownloadCity">Downloaded City Maps</string>
     <string name="map_allCity">All City Maps</string>
     <string name="moreText">More ...</string>
+    <string name="sports_details">Sports details</string>
+    <string name="record_history">My sports record</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_running_tab">RunningTabActivity</string>
 
 </resources>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="false"
+    android:id="@+id/main_content"
+    android:fitsSystemWindows="true" >
+
+    <FrameLayout
+        android:id="@+id/tab_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <RelativeLayout
+        android:id="@+id/radios_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/palegreen" >
+        <RadioGroup
+            android:id="@+id/radios"
+            android:layout_width="fill_parent"
+            android:layout_height="60.0dip"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <RadioButton
+                android:id="@+id/radio_me"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/item_menu_profile"
+                android:gravity="bottom|center"
+                android:padding="5.0dip"
+                android:text="我"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+
+            <!--
+            <RadioButton
+                android:id="@+id/radio2"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/item_menu_rank"
+                android:gravity="bottom|center"
+                android:padding="5.0dip"
+                android:text="排行榜"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+                -->
+
+            <!--
+            <TextView
+                android:id="@+id/start"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/menu_run_start"
+                android:gravity="center"
+                android:padding="5.0dip"
+                android:text="开始跑步"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+            -->
+
+            <RadioButton
+                android:id="@+id/radio_start"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/menu_run_start"
+                android:gravity="bottom|center"
+                android:padding="5.0dip"
+                android:text="开始跑步"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+            <!--
+            <RadioButton
+                android:id="@+id/radio_friends"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/item_menu_runner"
+                android:gravity="bottom|center"
+                android:padding="5.0dip"
+                android:text="跑友圈"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+                -->
+            <RadioButton
+                android:id="@+id/radio_more"
+                android:layout_width="0.0dip"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.0"
+                android:background="@drawable/item_menu_bg_sel"
+                android:button="@null"
+                android:drawablePadding="5.0px"
+                android:drawableTop="@drawable/item_menu_more"
+                android:gravity="bottom|center"
+                android:padding="5.0dip"
+                android:text="更多"
+                android:textColor="@color/white"
+                android:textSize="@dimen/textSize_mini" />
+        </RadioGroup>
+    </RelativeLayout>
+    
+    <include android:id="@+id/indoor_outdoor"
+        android:visibility="gone"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/dialog_run_mode">
+    </include> "
+
+</RelativeLayout>

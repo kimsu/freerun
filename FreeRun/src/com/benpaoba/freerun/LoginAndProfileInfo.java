@@ -12,6 +12,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -48,7 +49,7 @@ import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
 
-public class LoginAndProfileInfo extends Activity {
+public class LoginAndProfileInfo extends Fragment {
 	private final String TAG = "FreeRun";
 	
 	private boolean mLogState = false;
@@ -121,58 +122,70 @@ public class LoginAndProfileInfo extends Activity {
 	
 	private Cursor mCursor;
 	
+	private Context mContext;
+	
 	
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.user_profile_info);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+		
+		mContext = getActivity();
 		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
-		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this.getApplicationContext());
-		mLoginDataPreference = getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
+		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, getActivity().getApplicationContext());
+		mLoginDataPreference = mContext.getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
 				Context.MODE_PRIVATE);
-		mPath = this.getCacheDir().getPath();
+		mPath = mContext.getCacheDir().getPath();
 		mLogState = mLoginDataPreference.getBoolean(LOGSTATE, false);
-		// 初始化视图
-		initViews();
-		onListenMyItemClick();
+		
 	}
 	@Override
-	protected void onStart() {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		final View view = inflater.inflate(R.layout.user_profile_info, container, false);
+		// 初始化视图
+	    initViews(view);
+		onListenMyItemClick();
+		return view;
+	}
+	
+	@Override
+	public void onStart() {
 		super.onStart();
 		//handle user profile info
-
 	}
 	
 	
-	private void initViews() {
+	private void initViews(View view) {
 		
-		mUserSummaryInfo = (LinearLayout) findViewById(R.id.user_summary_info);
-		mUserIcon = (ImageView)findViewById(R.id.img_user_avatar);
-		mUserIconDefault = (ImageView) findViewById(R.id.img_user_avatar_default);
-		mLogin = (LinearLayout)findViewById(R.id.login);
-		mLogout = (LinearLayout)findViewById(R.id.logout);
-		mEditInfo = (TextView)findViewById(R.id.info_edit);
-		mUserNickname = (TextView)findViewById(R.id.pro_nickname);
-		mTotalDistance = (TextView)findViewById(R.id.total_distance);
-		mTotalTime = (TextView)findViewById(R.id.total_time);
-		mTotalCalories = (TextView)findViewById(R.id.total_calories);
+		mUserSummaryInfo = (LinearLayout) view.findViewById(R.id.user_summary_info);
+		mUserIcon = (ImageView)view.findViewById(R.id.img_user_avatar);
+		mUserIconDefault = (ImageView) view.findViewById(R.id.img_user_avatar_default);
+		mLogin = (LinearLayout)view.findViewById(R.id.login);
+		mLogout = (LinearLayout)view.findViewById(R.id.logout);
+		mEditInfo = (TextView)view.findViewById(R.id.info_edit);
+		mUserNickname = (TextView)view.findViewById(R.id.pro_nickname);
+		mTotalDistance = (TextView)view.findViewById(R.id.total_distance);
+		mTotalTime = (TextView)view.findViewById(R.id.total_time);
+		mTotalCalories = (TextView)view.findViewById(R.id.total_calories);
 
 		//handle the bestest history record. Start.
-		mFastestSpeedMatch = (TextView)findViewById(R.id.fastest_speed_match);
-		mLogestDistance = (TextView)findViewById(R.id.longest_distance);
-		mLongestTime = (TextView)findViewById(R.id.longest_time);
-		mShortestTimeFive = (TextView)findViewById(R.id.shortest_time_five);
-		mShortestTimeTen = (TextView)findViewById(R.id.shortest_time_ten);
-		mShortestTimeHalfMarathon = (TextView)findViewById(R.id.shortest_time_half_marathon);
-		mShortestTimeFullMarathon = (TextView)findViewById(R.id.shortest_time_full_marathon);
+		mFastestSpeedMatch = (TextView)view.findViewById(R.id.fastest_speed_match);
+		mLogestDistance = (TextView)view.findViewById(R.id.longest_distance);
+		mLongestTime = (TextView)view.findViewById(R.id.longest_time);
+		mShortestTimeFive = (TextView)view.findViewById(R.id.shortest_time_five);
+		mShortestTimeTen = (TextView)view.findViewById(R.id.shortest_time_ten);
+		mShortestTimeHalfMarathon = (TextView)view.findViewById(R.id.shortest_time_half_marathon);
+		mShortestTimeFullMarathon = (TextView)view.findViewById(R.id.shortest_time_full_marathon);
 		
 		//run history record
-		mFrequencies = (TextView)findViewById(R.id.record_history_times);
-		mCheckHistoryRecord = (RelativeLayout) findViewById(R.id.run_history);
+		mFrequencies = (TextView)view.findViewById(R.id.record_history_times);
+		mCheckHistoryRecord = (RelativeLayout) view.findViewById(R.id.run_history);
 		
 		//More setup
-		mMoreSetup = (RelativeLayout) findViewById(R.id.more_setUp);
+		mMoreSetup = (RelativeLayout) view.findViewById(R.id.more_setUp);
 		handleLogin();			
 
 	}
@@ -187,7 +200,7 @@ private void  onListenMyItemClick() {
 		public void onClick(View v) {
 				// TODO Auto-generated method stub
 			//Login Dialog 
-			mBuilder = new AlertDialog.Builder(LoginAndProfileInfo.this);
+			mBuilder = new AlertDialog.Builder(mContext);
 			if(false == mLogState) {
 				mBuilder.setMessage("Do you want to mLogin ?")
 				   .setCancelable(false)
@@ -341,7 +354,7 @@ private void  onListenMyItemClick() {
 		// update the best match velocity
 		String[]  projectionId = {RunRecordTable.COLUMN_USEDTIME, 
 				RunRecordTable.COLUMN_DISTANCE, RunRecordTable.COLUMN_COSTENERGY};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 						projectionId, 
 						null,
 						null, 
@@ -397,7 +410,7 @@ private void  onListenMyItemClick() {
 		
 		//update the longest distance;
 		String[] projectionDistance = {RunRecordTable.COLUMN_DISTANCE};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projectionDistance,
 				null,
 				null, 
@@ -419,7 +432,7 @@ private void  onListenMyItemClick() {
 		
 		//update the longest time;
 		String[] projectionTime = {RunRecordTable.COLUMN_USEDTIME};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projectionTime,
 				null,
 				null, 
@@ -441,7 +454,7 @@ private void  onListenMyItemClick() {
 		
 		//update the  5Km   best record 
 		String[] projection5KmTime = {RunRecordTable.COLUMN_FIVE};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projection5KmTime,
 				null,
 				null, 
@@ -465,7 +478,7 @@ private void  onListenMyItemClick() {
 		
 		//update the 10Km best record
 		String[] projection10KmTime = {RunRecordTable.COLUMN_TEN};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projection10KmTime,
 				null,
 				null, 
@@ -488,7 +501,7 @@ private void  onListenMyItemClick() {
 		//update the half Marathon best record
 		
 		String[] projectionHalfMarTime = {RunRecordTable.COLUMN_HALF_MAR};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projectionHalfMarTime,
 				null,
 				null, 
@@ -510,7 +523,7 @@ private void  onListenMyItemClick() {
 		
 		//update the full Marathon best record
 		String[] projectionfullMarTime = {RunRecordTable.COLUMN_FULL_MAR};
-		mCursor = getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
+		mCursor = mContext.getContentResolver().query(FreeRunContentProvider.CONTENT_URI, 
 				projectionfullMarTime,
 				null,
 				null, 
@@ -539,12 +552,12 @@ private void  onListenMyItemClick() {
 	
 	public void mLogin()
 	{
-		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, this);
+		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, mContext);
 		Log.d(TAG, "Login(): mTencent.isSessionVaild = " + mTencent.isSessionValid() + 
 				   "\n isReady = " + mTencent.isReady());
 		if (!mTencent.isSessionValid())
 		{
-			mTencent.login(this, "all", loginListener);
+			mTencent.login(getActivity(), "all", loginListener);
 		}
 	} 
 	
@@ -601,7 +614,7 @@ private void  onListenMyItemClick() {
 
 				}
 			};
-			mInfo = new UserInfo(this, mTencent.getQQToken());
+			mInfo = new UserInfo(mContext, mTencent.getQQToken());
 			mInfo.getUserInfo(listener);
 			//show the user personal mLogin info.
         	handleLogin();
@@ -652,7 +665,7 @@ private void  onListenMyItemClick() {
 
 	};
 	
-	protected void onResume() {
+	public void onResume() {
 		super.onResume();
 		//user simple Info
 		if(mLogState)
@@ -677,7 +690,7 @@ private void  onListenMyItemClick() {
 	 * 
 	 * **/
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    Log.d(TAG, "onActivityResult: requestCode= " + requestCode  + " resultCode=" + resultCode);
 	    if(requestCode == Constants.REQUEST_API) {
 	        if(resultCode == Constants.RESULT_LOGIN) {
@@ -688,7 +701,7 @@ private void  onListenMyItemClick() {
 	    	if (resultCode == Constants.RESULT_LOGIN) {
 	    		updateUserInfo();
 	            //updateLoginButton();
-	            Utils.showResultDialog(LoginAndProfileInfo.this, data.getStringExtra(Constants.LOGIN_INFO), "登录成功");
+	            Utils.showResultDialog(mContext, data.getStringExtra(Constants.LOGIN_INFO), "登录成功");
 	    		
 	    	}
 	    }
@@ -727,15 +740,15 @@ private void  onListenMyItemClick() {
 		public void onComplete(Object response) {
             Log.d(TAG, "BaseUiListener: onComplete()");
 			if (null == response) {
-                Utils.showResultDialog(LoginAndProfileInfo.this, "返回为空", "登录失败");
+                Utils.showResultDialog(mContext, "返回为空", "登录失败");
                 return;
             }
             JSONObject jsonResponse = (JSONObject) response;
             if (null != jsonResponse && jsonResponse.length() == 0) {
-                Utils.showResultDialog(LoginAndProfileInfo.this, "返回为空", "登录失败");
+                Utils.showResultDialog(mContext, "返回为空", "登录失败");
                 return;
             }
-			//Utils.showResultDialog(LoginAndProfileInfo.this, response.toString(), "登录成功");
+			//Utils.showResultDialog(mContext, response.toString(), "登录成功");
             // 有奖分享处理
             // handlePrizeShare();
             if(!mLoginDataPreference.getBoolean(WELCOMED, false)) {
@@ -752,13 +765,13 @@ private void  onListenMyItemClick() {
 
 		@Override
 		public void onError(UiError e) {
-			Utils.toastMessage(LoginAndProfileInfo.this, "onError: " + e.errorDetail);
+			Utils.toastMessage(getActivity(), "onError: " + e.errorDetail);
 			//Utils.dismissDialog();
 		}
 
 		@Override
 		public void onCancel() {
-			Utils.toastMessage(LoginAndProfileInfo.this, "onCancel: ");
+			Utils.toastMessage(getActivity(), "onCancel: ");
 			//Utils.dismissDialog();
 		}
 	}
@@ -822,7 +835,7 @@ private void  onListenMyItemClick() {
 					               RunRecordTable.COLUMN_HALF_MAR,
 					               RunRecordTable.COLUMN_FULL_MAR,
 					               RunRecordTable.COLUMN_USEDTIME};
-			CursorLoader cursorLoader = new CursorLoader(LoginAndProfileInfo.this,
+			CursorLoader cursorLoader = new CursorLoader(mContext,
 						FreeRunContentProvider.CONTENT_URI, 
 						loaderCreateProjection,
 						null, 

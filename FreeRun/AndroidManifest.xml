@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.benpaoba.freerun"
-    android:versionCode="8"
+    android:versionCode="9"
     android:versionName="0.3" >
 
     <uses-sdk
@@ -46,11 +46,21 @@
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="spzmcL3MMYZre6UvY2kUV6Pq" />
-        <meta-data android:name="UMENG_APPKEY"
-            android:value="55233badfd98c55f9d000896"/>
-        <meta-data android:name="UMENG_CHANNEL"
+        <meta-data
+            android:name="UMENG_APPKEY"
+            android:value="552788f5fd98c53a4500082d" />
+        <meta-data
+            android:name="UMENG_CHANNEL"
             android:value="Channel ID" />
-       
+
+       <activity
+            android:name="com.benpaoba.freerun.RunningTabActivity"
+            android:label="@string/title_activity_running_tab" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <!-- QQ 接入配置 -->
         <activity
 			android:name="com.tencent.tauth.AuthActivity" 
@@ -72,14 +82,7 @@
 
         <activity
             android:name="com.benpaoba.freerun.RunningMainActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoTitleBar"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:label="@string/app_name" >
         </activity>
 
         <service

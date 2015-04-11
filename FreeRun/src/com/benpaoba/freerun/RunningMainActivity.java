@@ -39,6 +39,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -154,6 +155,7 @@ public class RunningMainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = this;
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		UmengUpdateAgent.setDefault();
 		UmengUpdateAgent.setUpdateOnlyWifi(false); 
 		UmengUpdateAgent.update(this);
@@ -165,7 +167,7 @@ public class RunningMainActivity extends Activity {
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		mLocationManager.addGpsStatusListener(mGpsStatusListener);
 		
-		mSportStatus = SportsManager.STATUS_READY;
+		mSportStatus = SportsManager.STATUS_INITIAL;
 		//获取资源
 		mGpsSignalTextView = (TextView) findViewById(R.id.tv_bmap_run_gps);
 	    
@@ -230,6 +232,16 @@ public class RunningMainActivity extends Activity {
         mLocClient.requestLocation();
 	}
 	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		if(item.getItemId() == android.R.id.home) {
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
 	private BaiduMap.OnMapLoadedCallback mMapLoadedCallback = new BaiduMap.OnMapLoadedCallback(){
 
 		@Override
@@ -293,13 +305,18 @@ public class RunningMainActivity extends Activity {
 			Log.d(TAG,"OnClick, view = " + view);
 			switch(view.getId()) {
 			case R.id.btn_running_back:
-				if(mSportStatus == SportsManager.STATUS_READY) {
+				if(mSportStatus == SportsManager.STATUS_INITIAL) {
+					finish();
+				}else if(mSportStatus == SportsManager.STATUS_READY) {
 					isCounterCancelled = true;
 					mCountDownView.setVisibility(View.GONE);
 				}
 				break;
 				
-			case R.id.btn_running_middle:		
+			case R.id.btn_running_middle:
+				if(mSportStatus == SportsManager.STATUS_INITIAL) {
+					mSportStatus = SportsManager.STATUS_READY;
+				}
 				if(mSportStatus == SportsManager.STATUS_READY) {
 					if(GpsManager.isGpsOpen(RunningMainActivity.this)) {
 						mRunningStateLayout.setVisibility(View.GONE);
@@ -430,6 +447,7 @@ public class RunningMainActivity extends Activity {
         		mMiddleButton.setEnabled(true);
         		mMiddleButton.setAlpha(1f);
         		counterValue = INITIAL_COUNTER_VALUE;
+        		mSportStatus = SportsManager.STATUS_INITIAL;
         	}
         }
     }; 
@@ -797,6 +815,7 @@ public class RunningMainActivity extends Activity {
 					getResources().getString(R.string.no_gps)
 				);
 		mGpsSignalTextView.setText(gpsSinalDescription);
+		/*
 		userIcon =(ImageButton)findViewById(R.id.user_icon);
 		userIcon.setOnClickListener(new View.OnClickListener() {
 			
@@ -805,7 +824,7 @@ public class RunningMainActivity extends Activity {
 				Intent intent = new Intent();
 				intent.setAction(FreeRunConstants.ACTION_CHECK_PROFILE_INFO);
 				startActivity(intent);
-				/*
+				
 				RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) layout_left
 						.getLayoutParams();
 				TextView title = (TextView) findViewById(R.id.title);
@@ -818,9 +837,9 @@ public class RunningMainActivity extends Activity {
 					new AsynMove().execute(SPEED);
 					title.setVisibility(View.GONE);
 				}
-					*/
 			}
 		} );
+		*/
 	
 	}
 

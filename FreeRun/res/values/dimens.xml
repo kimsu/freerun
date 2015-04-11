@@ -73,7 +73,7 @@
     <dimen name="textSize_44pt">24.0dip</dimen>
     <dimen name="textSize_46pt">30.0dip</dimen>
     <dimen name="textSize_big">130.0sp</dimen>
-    <dimen name="textSize_mini">10.0dip</dimen>
+    <dimen name="textSize_mini">12.0dip</dimen>
     <dimen name="time_line">40.0dip</dimen>
     <dimen name="topbar_btn_size">45.0dip</dimen>
     <dimen name="topbar_btn_width">100.0dip</dimen>
