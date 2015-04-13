@@ -104,7 +104,7 @@
             android:exported="false" >
             
         </provider>
-        
+      <!--   
         <activity 
             android:name="com.benpaoba.freerun.LoginAndProfileInfo"
             android:theme="@android:style/Theme.NoTitleBar"
@@ -116,9 +116,7 @@
             </intent-filter>
             
         </activity>
-<!-- 
-        android:theme="@android:style/Theme.NoTitleBar"
- -->
+         -->
         <activity 
             android:name="com.benpaoba.freerun.EditUserInfo"
             android:theme="@android:style/Theme.Holo.NoActionBar"
@@ -137,6 +135,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <!-- 
         <activity 
             android:name="com.benpaoba.freerun.MoreSetupChoice"
             android:icon="@android:color/holo_green_light"
@@ -147,6 +146,14 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+         -->
+        <activity 
+            android:name="com.benpaoba.freerun.more.OfflineMapExpandableList"
+            android:icon="@android:color/holo_green_light"
+            android:label="离线地图"
+            android:launchMode="singleTop">
+        </activity>
+        
         
         <service
             android:name="com.umeng.update.net.DownloadingService"
