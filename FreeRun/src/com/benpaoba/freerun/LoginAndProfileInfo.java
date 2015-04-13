@@ -99,7 +99,7 @@ public class LoginAndProfileInfo extends Fragment {
 
 	protected static final String ICON = "user_icon";
 	//More setup Choice
-	private RelativeLayout mMoreSetup;
+//	private RelativeLayout mMoreSetup;
 	
 	//The best Record Item name, Used in Preference
 	private final String SPEEDMATCH = "speed_match";
@@ -138,6 +138,8 @@ public class LoginAndProfileInfo extends Fragment {
 				Context.MODE_PRIVATE);
 		mPath = mContext.getCacheDir().getPath();
 		mLogState = mLoginDataPreference.getBoolean(LOGSTATE, false);
+		handleLogin();
+		onListenMyItemClick();
 		
 	}
 	@Override
@@ -147,7 +149,6 @@ public class LoginAndProfileInfo extends Fragment {
 		final View view = inflater.inflate(R.layout.user_profile_info, container, false);
 		// 初始化视图
 	    initViews(view);
-		onListenMyItemClick();
 		return view;
 	}
 	
@@ -185,8 +186,9 @@ public class LoginAndProfileInfo extends Fragment {
 		mCheckHistoryRecord = (RelativeLayout) view.findViewById(R.id.run_history);
 		
 		//More setup
-		mMoreSetup = (RelativeLayout) view.findViewById(R.id.more_setUp);
-		handleLogin();			
+//		mMoreSetup = (RelativeLayout) view.findViewById(R.id.more_setUp);
+		
+				
 
 	}
 	
@@ -207,12 +209,12 @@ private void  onListenMyItemClick() {
 				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int id) {
 				        	Log.d(TAG, "\n======  LONIN START  ============");
-					            	mLogState = true;
-					    			mLoginDataPreference
-					            	.edit()
-					            		.putBoolean(LOGSTATE, true)
-					            			.commit();
-					    			mLogin();
+//					            	mLogState = true;
+//					    			mLoginDataPreference
+//					            	.edit()
+//					            		.putBoolean(LOGSTATE, true)
+//					            			.commit();
+					    			login();
 					           }
 					     })
 					.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -220,35 +222,9 @@ private void  onListenMyItemClick() {
 							dialog.dismiss();
 							
 							}
-						});
+						}).show();
 			}
-//			else {
-//				mBuilder.setMessage("Do you want to Logout ?")
-//				   .setCancelable(false)
-//				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//				        public void onClick(DialogInterface dialog, int id) {
-//				        	Log.d(TAG, "\n======  LOGOUT END  ============");
-//							logout();
-//							mLogState = false;
-//							mLoginDataPreference
-//			            	.edit()
-//			            		.putBoolean(LOGSTATE, false)
-//			            			.commit();
-//							handleLogin();
-//							dialog.cancel();
-//					      }
-//					 })
-//					.setNegativeButton("No", new DialogInterface.OnClickListener() {
-//						public void onClick(DialogInterface dialog, int id) {
-//								dialog.dismiss();
-//						}
-//					});
-//			}
 			
-			mBuilder.create()
-					.show();
-				 //alert = mBuilder.create();
-				 //alert.show();
 		}
 		});
 		
@@ -277,19 +253,20 @@ private void  onListenMyItemClick() {
 		});
 		
 		//Enter More setup choice Activity
-		mMoreSetup.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent();
-				intent.setAction(FreeRunConstants.ACTION_SETUP);
-				startActivity(intent);
-			}
-		});
+//		mMoreSetup.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				Intent intent = new Intent();
+//				intent.setAction(FreeRunConstants.ACTION_SETUP);
+//				startActivity(intent);
+//			}
+//		});
 	}
 	public  void handleLogin()
 	{ 
+		Log.e(TAG, "handleLogin(), mLogState = " + mLogState, new Exception());
 		
 		if(mLogState) {
 			Log.d(TAG, "Login .......");
@@ -550,7 +527,7 @@ private void  onListenMyItemClick() {
 	 *  调用QQ登录接口
 	 * **/
 	
-	public void mLogin()
+	public void login()
 	{
 		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, mContext);
 		Log.d(TAG, "Login(): mTencent.isSessionVaild = " + mTencent.isSessionValid() + 
@@ -614,9 +591,17 @@ private void  onListenMyItemClick() {
 
 				}
 			};
+			
 			mInfo = new UserInfo(mContext, mTencent.getQQToken());
+			Log.d(TAG,"begin to getListener");
 			mInfo.getUserInfo(listener);
+			Log.d(TAG,"After listener");
 			//show the user personal mLogin info.
+			mLogState = true;
+			mLoginDataPreference
+        	.edit()
+        		.putBoolean(LOGSTATE, true)
+        			.commit();
         	handleLogin();
 
 		} else {

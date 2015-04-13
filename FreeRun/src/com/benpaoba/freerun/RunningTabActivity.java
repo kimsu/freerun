@@ -1,13 +1,10 @@
 package com.benpaoba.freerun;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import android.os.Bundle;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +13,10 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TabHost;
+
+import com.benpaoba.freerun.more.*;
+import com.tencent.connect.common.Constants;
+import com.tencent.tauth.Tencent;
 
 public class RunningTabActivity extends Activity {
 
@@ -52,17 +53,22 @@ public class RunningTabActivity extends Activity {
 		mRadioMe.setOnClickListener(mClickListener);
 		mRadioStart.setOnClickListener(mClickListener);
 		mRadioMore.setOnClickListener(mClickListener);
+		
+		Fragment loginFragment = new LoginAndProfileInfo();  
+		getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
+		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
+		.commit(); 
 	}
 	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		Fragment loginFragment = new LoginAndProfileInfo();  
-		getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
-		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
-		.addToBackStack(null)  
-		.commit();  
+//		Fragment loginFragment = new LoginAndProfileInfo();  
+//		getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
+//		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
+//		.commit();  
+		//.addToBackStack(null)  
 	}
 
 	private View.OnClickListener mClickListener = new View.OnClickListener() {
@@ -76,15 +82,20 @@ public class RunningTabActivity extends Activity {
 				//loginFragment.setArguments(bundle);  
 				getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
-				.addToBackStack(null)  
 				.commit();  
+//				.addToBackStack(null)  
 			    break;
 			case R.id.radio_start:
 				showIndoorOutdoorMainView(true);
 				break;
 			case R.id.radio_more:
-				Intent moreIntent = new Intent(RunningTabActivity.this,MoreSetupChoice.class);
-				startActivity(moreIntent);
+				Fragment moreFragment = new MoreSetupChoice();
+				getFragmentManager().beginTransaction().replace(R.id.tab_content, moreFragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
+				.commit();  
+//				.addToBackStack(null)  
+//				Intent moreIntent = new Intent(RunningTabActivity.this,MoreSetupChoice.class);
+//				startActivity(moreIntent);
 				break;
 			case R.id.iv_run_mode_cancel:
 			case R.id.indoor_outdoor:
