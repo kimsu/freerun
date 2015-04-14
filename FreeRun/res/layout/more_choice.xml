@@ -45,18 +45,18 @@
 					android:layout_centerVertical="true"
 					android:layout_alignParentLeft="true"
 					android:textColor="@color/black"
-					android:text="版本更新"/>
+					android:text="当前版本"/>
                 	<TextView 
 						android:id="@+id/ver_state"
 						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
 						android:layout_toRightOf="@id/ver_title"
 						android:layout_centerVertical="true"
-						android:textSize="15sp"
-						android:textColor="@color/black"
-						android:text="（已是最新版本）"/>
-                	<TextView 
-						android:id="@+id/ver_number"
+						android:layout_marginLeft="6dp"
+						android:textSize="20sp"
+						android:textColor="@color/black"/>
+                	<Button 
+						android:id="@+id/ver_check"
 						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
 						android:layout_alignParentRight="true" 
@@ -64,7 +64,7 @@
 						android:layout_centerVertical="true"
 						android:textSize="15sp"
 						android:textColor="@color/black"
-						android:text="1.0.0"/>
+						android:text="检测更新"/>
             </RelativeLayout>
 			
             <RelativeLayout 

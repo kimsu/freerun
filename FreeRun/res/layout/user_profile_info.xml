@@ -288,8 +288,7 @@
 					android:layout_marginRight="10.0dip" 
 					android:layout_toLeftOf="@id/common_icon_arrow" 
 					android:layout_centerVertical="true"
-					android:textSize="15sp"
-					android:text="1 次"/>
+					android:textSize="24sp"/>
             </RelativeLayout> <!-- run history record, End -->  
 <!--             
             <RelativeLayout 

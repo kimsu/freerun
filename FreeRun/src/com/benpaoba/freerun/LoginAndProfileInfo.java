@@ -834,7 +834,8 @@ private void  onListenMyItemClick() {
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 			// TODO Auto-generated method stub
-			Log.d(TAG, "LoaderManager: onLoadFinished()");
+			Log.d(TAG, "LoaderManager: onLoadFinished()" + ", mFrequencies = " + mFrequencies);
+			mFrequencies.setText(String.valueOf(cursor.getCount()));
 		}
 		
 		//This callback lets you find out when the data is about to be released 

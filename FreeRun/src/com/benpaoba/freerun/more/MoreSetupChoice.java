@@ -18,7 +18,9 @@ import android.widget.TextView;
 import com.benpaoba.freerun.FreeRunConstants;
 import com.benpaoba.freerun.LoginAndProfileInfo;
 import com.benpaoba.freerun.R;
+import com.benpaoba.freerun.Utils;
 import com.tencent.tauth.Tencent;
+import com.umeng.update.UmengUpdateAgent;
 
 public class MoreSetupChoice extends Fragment {
 	private final String TAG = "FreeRun";
@@ -32,7 +34,7 @@ public class MoreSetupChoice extends Fragment {
 	
 	private TextView mDownloadState;
 	private TextView mVerState;
-	private TextView mVerNumber;
+	private Button mVersionCheck;
 	
 	private SharedPreferences logStatePreference;
 	
@@ -66,8 +68,16 @@ public class MoreSetupChoice extends Fragment {
 		
 		mDownloadState = (TextView) v.findViewById(R.id.download_state);
 		mVerState = (TextView) v.findViewById(R.id.ver_state);
-		mVerNumber = (TextView) v.findViewById(R.id.ver_number);
-		
+		mVersionCheck = (Button) v.findViewById(R.id.ver_check);
+		mVersionCheck.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				UmengUpdateAgent.setDefault();
+				UmengUpdateAgent.forceUpdate(getActivity());	
+			}
+		});
+		mVerState.setText(Utils.getAppVersion(getActivity()));
 		
 	}
 	private void onListeningItemClicked() {
@@ -87,7 +97,6 @@ public class MoreSetupChoice extends Fragment {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
 			}
 		});
 		
