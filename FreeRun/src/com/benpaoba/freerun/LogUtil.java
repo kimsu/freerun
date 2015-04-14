@@ -49,7 +49,7 @@ public class LogUtil {
         if (Utils.isSDcardExist()) {
             if (Utils.getSDFreeSize() > 1) {
                 File externalStorageDirectory = Environment.getExternalStorageDirectory();
-                path = externalStorageDirectory.getAbsolutePath() + "/designateddriver/";
+                path = externalStorageDirectory.getAbsolutePath() + "/sportsData/";
                 File directory = new File(path);
                 if (!directory.exists()) {
                     directory.mkdirs();

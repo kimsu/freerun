@@ -3,6 +3,7 @@ package com.benpaoba.freerun;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
 
 import java.io.DataInputStream;
@@ -17,11 +18,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.Projection;
@@ -61,9 +65,10 @@ import com.umeng.socialize.weixin.media.WeiXinShareContent;
 public class HistoryDetailsActivity extends Activity implements
 		OnGetGeoCoderResultListener {
 	private static final String TAG = "HistoryDetails";
-	private static final int DEFAULT_LEVEL = 18;
+	private float mDisplayLevel;
 	private MapView mMapView;
 	private BaiduMap mBaiduMap;
+	private Projection mProjection;
 	private List<LatLng> mPointLists;
 	private LatLng mStartPoint;
 	private LatLng mEndPoint;
@@ -85,12 +90,26 @@ public class HistoryDetailsActivity extends Activity implements
 	private final UMSocialService mController = UMServiceFactory
             .getUMSocialService(Constants.DESCRIPTOR);
     private SHARE_MEDIA mPlatform = SHARE_MEDIA.SINA;
+    
+    private Point mMostLeftAndBottomPoint;
+    private Point mMostRightAndTopPoint;
+    private double mMaxLat;
+    private double mMaxLng;
+    private double mMinLat;
+    private double mMinLng;
+    
+    private int mScreenWidthInPixels;
+    private int mScreenHeightInPixels;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		DisplayMetrics dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		mScreenWidthInPixels = dm.widthPixels;
+		mScreenHeightInPixels = dm.heightPixels;
 		setContentView(R.layout.activity_sportdetais);
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
@@ -116,70 +135,123 @@ public class HistoryDetailsActivity extends Activity implements
 		// ≥ı ºªØµÿÕº
 		mMapView = (MapView) findViewById(R.id.map_view);
 		mBaiduMap = mMapView.getMap();
+		mDisplayLevel = mBaiduMap.getMaxZoomLevel();
 		mBaiduMap.clear();
+		mBaiduMap.setMyLocationData(new MyLocationData.Builder().latitude(0.0f)
+				.longitude(0.0f).build());
+		mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(
+				new LatLng(0.0f,0.0f), mDisplayLevel));
+		mBaiduMap.setOnMapLoadedCallback(mMapLoadedCallback);
+		mBaiduMap.setOnMapStatusChangeListener(mMapStatusChangeListener);
 		mSearch = GeoCoder.newInstance();
 		mDataFile = new File(SportsManager.POINTS_DIR,
 				SportsManager.POINTS_FILE + mId + SportsManager.SUFFIX);
 		mPointLists = (ArrayList<LatLng>) readPointsFromFile();
-		double mMaxWidthDistance = 0;
-		double mMaxHeightDistance = 0;
 		DistanceComputeInterface distanceComputeInterface = DistanceComputeImpl.getInstance();
-       
+        Log.d(TAG,"mPointList : " + mPointLists + ", size:" + ((mPointLists==null) ? 0 : mPointLists.size()));
 		if(mPointLists != null && mPointLists.size() > 1 ) {
-	        double maxLat = mPointLists.get(0).latitude;
-	        double maxLng = mPointLists.get(0).longitude;
-	        double minLat = mPointLists.get(0).latitude;
-	        double minLng = mPointLists.get(0).longitude;
+	        mMaxLat = mPointLists.get(0).latitude;
+	        mMaxLng = mPointLists.get(0).longitude;
+	        mMinLat = mPointLists.get(0).latitude;
+	        mMinLng = mPointLists.get(0).longitude;
 			for(LatLng point : mPointLists) {
-				if(maxLat < point.latitude) {
-					maxLat = point.latitude;
+				if(mMaxLat < point.latitude) {
+					mMaxLat = point.latitude;
 				}
 				
-				if(maxLng < point.longitude) {
-					maxLng = point.longitude;
+				if(mMaxLng < point.longitude) {
+					mMaxLng = point.longitude;
 				}
 				
-				if(minLat > point.latitude) {
-					minLat = point.latitude;
+				if(mMinLat > point.latitude) {
+					mMinLat = point.latitude;
 				}
 				
-				if(minLng > point.longitude) {
-					minLng = point.longitude;
+				if(mMinLng > point.longitude) {
+					mMinLng = point.longitude;
 				}
 			}
 			
-			mMaxWidthDistance = distanceComputeInterface.getShortDistance(
-	        			minLat,
-	        			minLng,
-	        			minLat,
-	        			maxLng);
-		    mMaxHeightDistance = distanceComputeInterface.getShortDistance(
-		    		minLat, 
-		    		minLng, 
-		    		maxLat, 
-		    		minLng);
-		    
 		    mStartPoint = mPointLists.get(0);
 		    mEndPoint = mPointLists.get(mPointLists.size() - 1);
 		    mSearch.reverseGeoCode(new ReverseGeoCodeOption().
-				    location(new LatLng((minLat + maxLat) / 2,(minLng + maxLng) / 2)));
+				    location(new LatLng((mMinLat + mMaxLat) / 2,(mMinLng + mMaxLng) / 2)));
 		    mSearch.setOnGetGeoCodeResultListener(this);
 		    addSportDetails();
-		    
 		}
-		DisplayMetrics dm = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(dm);
-		int screenWidth = dm.widthPixels;
-		int screenHeight = dm.heightPixels;
-	
-		Projection projection = mBaiduMap.getProjection();
-		float meterToPixelsInWidth = 0;
-		float meterToPixelsInHeight = 0;
-		Log.d(TAG,"sceenH = " + screenHeight + ", w = " + screenWidth + ", maxW = " + mMaxWidthDistance + 
-				", maxH = " + mMaxHeightDistance + ", meter : " + projection);
-		
 	}
 	
+	private BaiduMap.OnMapLoadedCallback mMapLoadedCallback = new BaiduMap.OnMapLoadedCallback(){
+
+		@Override
+		public void onMapLoaded() {
+			// TODO Auto-generated method stub
+			Log.d(TAG,"HistoryDetailsActivity, onMapLoaded()");
+			mProjection = mBaiduMap.getProjection();
+			if(mProjection != null) {
+			    mMostLeftAndBottomPoint = mProjection.toScreenLocation(new LatLng(mMinLat,mMinLng));
+			    mMostRightAndTopPoint = mProjection.toScreenLocation(new LatLng(mMaxLat, mMaxLng));
+			    
+			    Log.d(TAG," id = " + mId + ",onMapLoaded, Point Info: " +
+					    "left = " + mMostLeftAndBottomPoint.x + 
+					    ", right = " + mMostRightAndTopPoint.x +
+					    ", bottom = " + mMostLeftAndBottomPoint.y + 
+					    ", top = " +  mMostRightAndTopPoint.y);
+			    
+			    DisplayMetrics dm = new DisplayMetrics();
+			    getWindowManager().getDefaultDisplay().getMetrics(dm);
+			    int level = (int)mDisplayLevel;
+			    if ((Math.abs(mMostRightAndTopPoint.x - mMostLeftAndBottomPoint.x) >= mScreenWidthInPixels)
+					|| (Math.abs(mMostRightAndTopPoint.y - mMostLeftAndBottomPoint.y) >= mScreenHeightInPixels)) {
+			        MapStatusUpdate u = MapStatusUpdateFactory.zoomTo(--level);
+				if (u != null) {
+			            mBaiduMap.animateMapStatus(u);
+				}
+			    }
+			}
+		}
+	};
+	
+	private OnMapStatusChangeListener mMapStatusChangeListener = new OnMapStatusChangeListener() {
+
+		@Override
+		public void onMapStatusChange(MapStatus status) {
+			// TODO Auto-generated method stub
+		} 
+
+		@Override
+		public void onMapStatusChangeFinish(MapStatus status) {
+			// TODO Auto-generated method stub
+		    Log.d(TAG,"onMapStatusFinish, status = " + status);
+		    mProjection = mBaiduMap.getProjection();
+		    if(mProjection == null) {
+		        return;
+		    }
+		    int level = (int)status.zoom;
+		    mMostLeftAndBottomPoint = mProjection.toScreenLocation(new LatLng(mMinLat,mMinLng));
+		    mMostRightAndTopPoint = mProjection.toScreenLocation(new LatLng(mMaxLat, mMaxLng));
+	            Log.d(TAG,"After MapStatus Finish(), " +  
+	    	            ", left = " + mMostLeftAndBottomPoint.x + 
+			    ", right = " + mMostRightAndTopPoint.x +
+			    ", bottom = " + mMostLeftAndBottomPoint.y + 
+			    ", top = " +  mMostRightAndTopPoint.y);
+	    	
+	    	if ((Math.abs(mMostRightAndTopPoint.x - mMostLeftAndBottomPoint.x) >= mScreenWidthInPixels)
+					|| (Math.abs(mMostRightAndTopPoint.y - mMostLeftAndBottomPoint.y) >= mScreenHeightInPixels)) {
+		        MapStatusUpdate u = MapStatusUpdateFactory.zoomTo(--level);
+			if (u != null) {
+		    	    Log.d(TAG,"onMapStatusChangeFinish, animateMapStatus, new level =  " + level);
+		            mBaiduMap.animateMapStatus(u);
+			}
+		    }
+		}
+
+		@Override
+		public void onMapStatusChangeStart(MapStatus status) {
+			// TODO Auto-generated method stub
+		}
+		
+	};
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
@@ -411,7 +483,6 @@ public class HistoryDetailsActivity extends Activity implements
 		// TODO Auto-generated method stub
 		mMapView.onPause();
 		super.onPause();
-		Log.d(TAG,"Histroy, onPause()");
 	}
 
 	@Override
@@ -419,7 +490,6 @@ public class HistoryDetailsActivity extends Activity implements
 		// TODO Auto-generated method stub
 		mMapView.onDestroy();
 		super.onDestroy();
-		Log.d(TAG,"Histroy, onDestroy()");
 	}
 
 	private void addSportDetails() {
@@ -450,16 +520,14 @@ public class HistoryDetailsActivity extends Activity implements
 					Toast.LENGTH_LONG).show();
 			return;
 		}
-		 
-		LatLng latLng = result.getLocation();
-		if(mBaiduMap != null) {
-			MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(latLng, 
-					DEFAULT_LEVEL);
-			if(u != null) {
-		        mBaiduMap.animateMapStatus(u);
-			}
-		}
 		
+		LatLng location = result.getLocation();
+		Log.d(TAG,"onGetReverseGeoCode, zoomLevel = " + mDisplayLevel);
+		MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(
+                        location, mDisplayLevel);
+		if (u != null) {
+		    mBaiduMap.animateMapStatus(u);
+		}
 	}
 }
 

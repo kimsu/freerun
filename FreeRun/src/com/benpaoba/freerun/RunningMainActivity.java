@@ -79,7 +79,7 @@ import com.umeng.update.UmengUpdateAgent;
 import com.umeng.update.UpdateConfig;
 
 public class RunningMainActivity extends Activity {
-	public static final String TAG = "RunningMap";
+	public static final String TAG = "FreeRun";
 	
 	private final static float DEFAULT_ZOOM_LEVEL = 18.0f;
 	private final static int SAVA_FILE_INTERVALS = 60;
@@ -122,7 +122,7 @@ public class RunningMainActivity extends Activity {
 	private LatLng mPointLast = null;
 	private LatLng mPointBeforeLast = null;
 	
-	private int mUpdateInterval = 0;
+	private static final int UPDATE_SCREENCENTER_INTERVALS = 5;
 	
     private SoundClips.Player mSoundPlayer;
     private Context mContext;
@@ -213,6 +213,10 @@ public class RunningMainActivity extends Activity {
 	    // 地图初始化
 	 	mMapView = (MapView) findViewById(R.id.map_view);
 	 	mBaiduMap = mMapView.getMap();
+		mBaiduMap.setMyLocationData(new MyLocationData.Builder().latitude(0.0f)
+				.longitude(0.0f).build());
+		mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(
+				new LatLng(0.0f,0.0f), DEFAULT_ZOOM_LEVEL));
 	 	Log.d(TAG,"onCreate(), height: " + mMapView.getHeight());
 	 	// 开启定位图层
 	 	mBaiduMap.setMyLocationEnabled(true);
@@ -250,7 +254,6 @@ public class RunningMainActivity extends Activity {
 			Log.d(TAG,"RunningMainActivity, onMapLoaded()");
 		}
 	};
-	
 	
 	private int mUsedSatellitesCount = 0;
 	private final GpsStatus.Listener mGpsStatusListener = new GpsStatus.Listener() {
@@ -376,24 +379,24 @@ public class RunningMainActivity extends Activity {
 						RunRecordTable.COLUMN_ID + "=?",
 		                        new String[] {mInsertUri.getLastPathSegment()}
 						);
-//				if(mCurrentDistance < 10) {
-//					Utils.createConfirmDialog(RunningMainActivity.this,
-//							R.drawable.btn_green_mini, "提示", "你的跑步距离太短，请重新运动一会儿后再点击结束！",
-//				            "确定","取消",
-//				            null,
-//				            null).show();
-//				} else {
-				
-				Log.d("yxf","saveFile : " + mSaveFile.getAbsolutePath());
-				savePointsToFiles(mPointLists, mSaveFile);
-				mPointLists.clear();
-				Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
-				intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
-				intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
-				intent.putExtra("total_distance",mCurrentDistance);
-				intent.putExtra("start_time",mStartTime);
-				startActivity(intent);
-//				}
+				if(mCurrentDistance < 10) {
+				    Utils.createConfirmDialog(RunningMainActivity.this,
+				            R.drawable.btn_green_mini, "提示", 
+					    "你的跑步距离太短，请重新运动一会儿后再点击结束！",
+				            "确定","取消",
+				            null,
+				            null).show();
+				} else {
+				    Log.d("yxf","saveFile : " + mSaveFile.getAbsolutePath());
+				    savePointsToFiles(mPointLists, mSaveFile);
+				    mPointLists.clear();
+				    Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
+				    intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
+				    intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
+				    intent.putExtra("total_distance",mCurrentDistance);
+				    intent.putExtra("start_time",mStartTime);
+				    startActivity(intent);
+				}
 				mBaiduMap.clear();
 				mSportStatus = SportsManager.STATUS_READY;
 				mMiddleButton.setText(R.string.status_start);
@@ -523,6 +526,7 @@ public class RunningMainActivity extends Activity {
 	}
 	
 	private BDLocation mLocation;
+	private int mUpdateCenterLocationIntervals = 0;
 	/**
 	 * 定位SDK监听函数
 	 */
@@ -548,13 +552,16 @@ public class RunningMainActivity extends Activity {
 					.direction(100).latitude(location.getLatitude())
 					.longitude(location.getLongitude()).build();
 			mBaiduMap.setMyLocationData(locData);
-			if(mIsFirstLoc) {
+			if(mIsFirstLoc ||
+					(mUpdateCenterLocationIntervals % UPDATE_SCREENCENTER_INTERVALS == 0)) {
 			    mIsFirstLoc = false;
 				LatLng ll = new LatLng(location.getLatitude(),
 			            location.getLongitude());
 				MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, DEFAULT_ZOOM_LEVEL);
 				mBaiduMap.animateMapStatus(u);
+				mUpdateCenterLocationIntervals = 0;
 			}
+			mUpdateCenterLocationIntervals++;
 			// draw the sports path
 			if (mSportStatus == SportsManager.STATUS_RUNNING && 
 					(location.getLocType() == BDLocation.TypeGpsLocation /*||

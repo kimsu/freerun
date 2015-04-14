@@ -138,7 +138,6 @@
         <!-- 
         <activity 
             android:name="com.benpaoba.freerun.MoreSetupChoice"
-            android:icon="@android:color/holo_green_light"
             android:label="更多"
             android:launchMode="singleTop">
             <intent-filter >
@@ -149,7 +148,6 @@
          -->
         <activity 
             android:name="com.benpaoba.freerun.more.OfflineMapExpandableList"
-            android:icon="@android:color/holo_green_light"
             android:label="离线地图"
             android:launchMode="singleTop">
         </activity>
