@@ -125,7 +125,7 @@ public class FreeRunContentProvider extends ContentProvider {
 						null);
 			} else {
 				rowsDeleted = sqlDB.delete(RunRecordTable.TABLE_RUN_RECORD,
-						RunRecordTable.COLUMN_ID + "=" + id + "and" + selection,
+						RunRecordTable.COLUMN_ID + "=" + id + " and " + selection,
 						selectionArgs);
 			}
 			break;

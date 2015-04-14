@@ -27,6 +27,7 @@
     <string name="sports_details">Sports details</string>
     <string name="record_history">My sports record</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_running_tab">RunningTabActivity</string>
+    <string name="title_activity_running_tab">FreeRun</string>
+    <string name="title_more_setup">More</string>
 
 </resources>

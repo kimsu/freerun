@@ -50,7 +50,7 @@ public class MoreSetupChoice extends Fragment {
 	public  void onActivityCreated(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 //		setContentView(R.layout.more_choice);
-		
+		getActivity().setTitle(R.string.more);
 		onListeningItemClicked();
 		logStatePreference = getActivity().getSharedPreferences(
 					FreeRunConstants.PROFILE_INFO_PREFERENCES,

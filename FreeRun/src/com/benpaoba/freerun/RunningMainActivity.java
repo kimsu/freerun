@@ -366,28 +366,28 @@ public class RunningMainActivity extends Activity {
 				stopService(new Intent(RunningMainActivity.this, LocationService.class));
 				mSoundPlayer.play(SoundClips.COMPLETE_SPORT,0,0,0);
 				cancelTimer();
-				//clear all the overlays
 				
-				ContentValues values = new ContentValues();
-				values.put(RunRecordTable.COLUMN_DATE,mStartTime);
-				values.put(RunRecordTable.COLUMN_USEDTIME,mCurrentIndividualStatusSeconds);
-				values.put(RunRecordTable.COLUMN_DISTANCE,mCurrentDistance);
-				Log.d(TAG,"click ,add to databases");
-
-				RunningMainActivity.this.getContentResolver().update(mInsertUri,
-						values,
-						RunRecordTable.COLUMN_ID + "=?",
-		                        new String[] {mInsertUri.getLastPathSegment()}
-						);
 				if(mCurrentDistance < 10) {
+					RunningMainActivity.this.getContentResolver().delete(mInsertUri,
+							RunRecordTable.COLUMN_ID + "=?",
+			                        new String[] {mInsertUri.getLastPathSegment()});		
 				    Utils.createConfirmDialog(RunningMainActivity.this,
-				            R.drawable.btn_green_mini, "提示", 
+				            R.drawable.ic_launcher, "提示", 
 					    "你的跑步距离太短，请重新运动一会儿后再点击结束！",
 				            "确定","取消",
 				            null,
 				            null).show();
+				    
 				} else {
-				    Log.d("yxf","saveFile : " + mSaveFile.getAbsolutePath());
+					ContentValues values = new ContentValues();
+					values.put(RunRecordTable.COLUMN_DATE,mStartTime);
+					values.put(RunRecordTable.COLUMN_USEDTIME,mCurrentIndividualStatusSeconds);
+					values.put(RunRecordTable.COLUMN_DISTANCE,mCurrentDistance);
+					RunningMainActivity.this.getContentResolver().update(mInsertUri,
+							values,
+							RunRecordTable.COLUMN_ID + "=?",
+			                        new String[] {mInsertUri.getLastPathSegment()}
+							);		
 				    savePointsToFiles(mPointLists, mSaveFile);
 				    mPointLists.clear();
 				    Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
@@ -397,6 +397,7 @@ public class RunningMainActivity extends Activity {
 				    intent.putExtra("start_time",mStartTime);
 				    startActivity(intent);
 				}
+				//clear all the overlays
 				mBaiduMap.clear();
 				mSportStatus = SportsManager.STATUS_READY;
 				mMiddleButton.setText(R.string.status_start);
@@ -476,7 +477,6 @@ public class RunningMainActivity extends Activity {
 		values.put(RunRecordTable.COLUMN_DATE,mStartTime);
 		mInsertUri = RunningMainActivity.this.getContentResolver().
 				insert(FreeRunContentProvider.CONTENT_URI, values);
-		Log.d("yxf","mInsertUri = " + mInsertUri);
 		mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
 				+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
 		if(mSaveFile.exists()) {

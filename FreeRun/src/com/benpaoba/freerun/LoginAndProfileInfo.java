@@ -130,7 +130,7 @@ public class LoginAndProfileInfo extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
-		
+		getActivity().setTitle(R.string.app_name);
 		mContext = getActivity();
 		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
 		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, getActivity().getApplicationContext());
