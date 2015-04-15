@@ -2,6 +2,7 @@ package com.benpaoba.freerun;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener;
+import com.baidu.mapapi.map.BaiduMap.SnapshotReadyCallback;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
@@ -288,6 +290,7 @@ public class HistoryDetailsActivity extends Activity implements
 			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
 			startActivity(Intent.createChooser(intent, "选择分享类型"));
 			*/
+			setShareContent();
 			mController.getConfig().setPlatforms(SHARE_MEDIA.WEIXIN, SHARE_MEDIA.WEIXIN_CIRCLE,
                     SHARE_MEDIA.QQ, SHARE_MEDIA.QZONE,SHARE_MEDIA.SINA,SHARE_MEDIA.TENCENT, SHARE_MEDIA.DOUBAN,
                     SHARE_MEDIA.RENREN);
@@ -342,8 +345,7 @@ public class HistoryDetailsActivity extends Activity implements
 
         // 添加微信、微信朋友圈平台
         addWXPlatform();
-        
-        setShareContent();
+        //setShareContent();
 	}
 
 	private void addQQAndQZonePlatform() {
@@ -386,94 +388,99 @@ public class HistoryDetailsActivity extends Activity implements
                 "1104450496", "6f0fd8q9lCGsRHBv");
         qZoneSsoHandler.addToSocialSDK();
         mController.setShareContent(shareContent + "--QQ空间");
-
-        UMImage localImage = new UMImage(this, R.drawable.device);
-        UMImage urlImage = new UMImage(this,
+        final UMImage localImage = new UMImage(this, R.drawable.device);
+        final UMImage urlImage = new UMImage(this,
                 "http://www.umeng.com/images/pic/social/integrated_3.png");
         // UMImage resImage = new UMImage(getActivity(), R.drawable.icon);
+        //final UMImage shareImage;
+        mBaiduMap.snapshot(new SnapshotReadyCallback() {
+			public void onSnapshotReady(Bitmap snapshot) {
+				UMImage shareImage = new UMImage(HistoryDetailsActivity.this, snapshot);
+				// 视频分享
+		        UMVideo video = new UMVideo(
+		                "http://v.youku.com/v_show/id_XNTc0ODM4OTM2.html");
+		        // vedio.setThumb("http://www.umeng.com/images/pic/home/social/img-1.png");
+		        video.setTitle(getResources().getString(R.string.share_title));
+		        video.setThumb(shareImage);
 
-        // 视频分享
-        UMVideo video = new UMVideo(
-                "http://v.youku.com/v_show/id_XNTc0ODM4OTM2.html");
-        // vedio.setThumb("http://www.umeng.com/images/pic/home/social/img-1.png");
-        video.setTitle(getResources().getString(R.string.share_title));
-        video.setThumb(urlImage);
+		        UMusic uMusic = new UMusic(
+		                "http://music.huoxing.com/upload/20130330/1364651263157_1085.mp3");
+		        uMusic.setAuthor(getResources().getString(R.string.app_name));
+		        uMusic.setTitle(getResources().getString(R.string.share_title));
+		        uMusic.setThumb(shareImage);
+		        uMusic.setThumb("http://www.umeng.com/images/pic/social/chart_1.png");
+		        
+		        WeiXinShareContent weixinContent = new WeiXinShareContent();
+		        weixinContent.setShareContent(shareContent + "--微信");
+		        weixinContent.setTitle(getResources().getString(R.string.share_title));
+		        weixinContent.setTargetUrl("http://www.umeng.com/social");
+		        weixinContent.setShareMedia(shareImage);
+		        mController.setShareMedia(weixinContent);
 
-        UMusic uMusic = new UMusic(
-                "http://music.huoxing.com/upload/20130330/1364651263157_1085.mp3");
-        uMusic.setAuthor(getResources().getString(R.string.app_name));
-        uMusic.setTitle(getResources().getString(R.string.share_title));
-        uMusic.setThumb(urlImage);
-        uMusic.setThumb("http://www.umeng.com/images/pic/social/chart_1.png");
+		        // 设置朋友圈分享的内容
+		        CircleShareContent circleMedia = new CircleShareContent();
+		        circleMedia.setShareContent(shareContent + "--微信朋友圈");
+		        circleMedia.setTitle(getResources().getString(R.string.share_title));
+		        circleMedia.setShareMedia(shareImage);
+		        // circleMedia.setShareMedia(uMusic);
+		        // circleMedia.setShareMedia(video);
+		        circleMedia.setTargetUrl("http://www.umeng.com/social");
+		        mController.setShareMedia(circleMedia);
+
+
+		        UMImage qzoneImage = new UMImage(HistoryDetailsActivity.this,
+		                "http://www.umeng.com/images/pic/social/integrated_3.png");
+		        qzoneImage
+		                .setTargetUrl("http://www.umeng.com/images/pic/social/integrated_3.png");
+
+		        // 设置QQ空间分享内容
+		        QZoneShareContent qzone = new QZoneShareContent();
+		        qzone.setShareContent(shareContent + "--QQ空间");
+		        qzone.setTargetUrl("http://www.umeng.com");
+		        qzone.setTitle(getResources().getString(R.string.share_title));
+		        qzone.setShareMedia(shareImage);
+		        //qzone.setShareMedia(uMusic);
+		        mController.setShareMedia(qzone);
+
+		        video.setThumb(new UMImage(HistoryDetailsActivity.this, BitmapFactory.decodeResource(
+		                getResources(), R.drawable.device)));
+
+		        QQShareContent qqShareContent = new QQShareContent();
+		        qqShareContent.setShareContent(shareContent + "--QQ分享");
+		        qqShareContent.setTitle(getResources().getString(R.string.share_title));
+		        qqShareContent.setShareMedia(uMusic);
+		        qqShareContent.setTargetUrl("http://www.umeng.com/social");
+		        mController.setShareMedia(qqShareContent);
+
+		        // 视频分享
+		        UMVideo umVideo = new UMVideo(
+		                "http://v.youku.com/v_show/id_XNTc0ODM4OTM2.html");
+		        umVideo.setThumb("http://www.umeng.com/images/pic/home/social/img-1.png");
+		        umVideo.setTitle(getResources().getString(R.string.share_title));
+
+		        TencentWbShareContent tencent = new TencentWbShareContent();
+		        tencent.setShareContent(shareContent + "--腾讯微博");
+		        // 设置tencent分享内容
+		        mController.setShareMedia(tencent);
+		        
+		        SinaShareContent sinaContent = new SinaShareContent();
+		        sinaContent.setShareContent(shareContent + "--新浪微博");
+		        mController.setShareMedia(sinaContent);
+
+		        TwitterShareContent twitterShareContent = new TwitterShareContent();
+		        twitterShareContent
+		                .setShareContent(shareContent + "--Twitter");
+		        twitterShareContent.setShareMedia(new UMImage(HistoryDetailsActivity.this, new File("/storage/sdcard0/emoji.gif")));
+		        mController.setShareMedia(twitterShareContent);
+
+		        GooglePlusShareContent googlePlusShareContent = new GooglePlusShareContent();
+		        googlePlusShareContent
+		                .setShareContent(shareContent + "--Google+");
+		        googlePlusShareContent.setShareMedia(shareImage);
+		        mController.setShareMedia(googlePlusShareContent);
+			}
+		});
         
-        WeiXinShareContent weixinContent = new WeiXinShareContent();
-        weixinContent.setShareContent(shareContent + "--微信");
-        weixinContent.setTitle(getResources().getString(R.string.share_title));
-        weixinContent.setTargetUrl("http://www.umeng.com/social");
-        weixinContent.setShareMedia(urlImage);
-        mController.setShareMedia(weixinContent);
-
-        // 设置朋友圈分享的内容
-        CircleShareContent circleMedia = new CircleShareContent();
-        circleMedia.setShareContent(shareContent + "--微信朋友圈");
-        circleMedia.setTitle(getResources().getString(R.string.share_title));
-        circleMedia.setShareMedia(urlImage);
-        // circleMedia.setShareMedia(uMusic);
-        // circleMedia.setShareMedia(video);
-        circleMedia.setTargetUrl("http://www.umeng.com/social");
-        mController.setShareMedia(circleMedia);
-
-
-        UMImage qzoneImage = new UMImage(this,
-                "http://www.umeng.com/images/pic/social/integrated_3.png");
-        qzoneImage
-                .setTargetUrl("http://www.umeng.com/images/pic/social/integrated_3.png");
-
-        // 设置QQ空间分享内容
-        QZoneShareContent qzone = new QZoneShareContent();
-        qzone.setShareContent(shareContent + "--QQ空间");
-        qzone.setTargetUrl("http://www.umeng.com");
-        qzone.setTitle(getResources().getString(R.string.share_title));
-        qzone.setShareMedia(urlImage);
-        //qzone.setShareMedia(uMusic);
-        mController.setShareMedia(qzone);
-
-        video.setThumb(new UMImage(this, BitmapFactory.decodeResource(
-                getResources(), R.drawable.device)));
-
-        QQShareContent qqShareContent = new QQShareContent();
-        qqShareContent.setShareContent(shareContent + "--QQ分享");
-        qqShareContent.setTitle(getResources().getString(R.string.share_title));
-        qqShareContent.setShareMedia(uMusic);
-        qqShareContent.setTargetUrl("http://www.umeng.com/social");
-        mController.setShareMedia(qqShareContent);
-
-        // 视频分享
-        UMVideo umVideo = new UMVideo(
-                "http://v.youku.com/v_show/id_XNTc0ODM4OTM2.html");
-        umVideo.setThumb("http://www.umeng.com/images/pic/home/social/img-1.png");
-        umVideo.setTitle(getResources().getString(R.string.share_title));
-
-        TencentWbShareContent tencent = new TencentWbShareContent();
-        tencent.setShareContent(shareContent + "--腾讯微博");
-        // 设置tencent分享内容
-        mController.setShareMedia(tencent);
-        
-        SinaShareContent sinaContent = new SinaShareContent();
-        sinaContent.setShareContent(shareContent + "--新浪微博");
-        mController.setShareMedia(sinaContent);
-
-        TwitterShareContent twitterShareContent = new TwitterShareContent();
-        twitterShareContent
-                .setShareContent(shareContent + "--Twitter");
-        twitterShareContent.setShareMedia(new UMImage(this, new File("/storage/sdcard0/emoji.gif")));
-        mController.setShareMedia(twitterShareContent);
-
-        GooglePlusShareContent googlePlusShareContent = new GooglePlusShareContent();
-        googlePlusShareContent
-                .setShareContent(shareContent + "--Google+");
-        googlePlusShareContent.setShareMedia(localImage);
-        mController.setShareMedia(googlePlusShareContent);
         
     }
 
