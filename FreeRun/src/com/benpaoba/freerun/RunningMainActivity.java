@@ -239,10 +239,12 @@ public class RunningMainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// TODO Auto-generated method stub
+		/*
 		if(item.getItemId() == android.R.id.home) {
 			finish();
 			return true;
 		}
+		*/
 		return super.onOptionsItemSelected(item);
 	}
 
