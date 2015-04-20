@@ -127,6 +127,7 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="center" 
 				android:layout_marginLeft="20dip"
+				android:background="@drawable/comm_bg"
 				android:orientation="vertical">  <!--Log out text Info, Begin -->
                 <TextView 
                     android:layout_width="fill_parent"
@@ -264,7 +265,8 @@
 				android:background="@color/white" 
 				android:layout_width="fill_parent"
 				android:layout_height="54dip"
-				android:layout_marginTop="18dip"> <!-- run history record, start -->
+				android:layout_marginTop="18dip"
+				android:background="@drawable/comm_bg"> <!-- run history record, start -->
                 <TextView 
 					android:textSize="30sp" 
 					android:id="@+id/tv_record_history" 
@@ -288,7 +290,8 @@
 					android:layout_marginRight="10.0dip" 
 					android:layout_toLeftOf="@id/common_icon_arrow" 
 					android:layout_centerVertical="true"
-					android:textSize="24sp"/>
+					android:textSize="15sp"
+					android:text="1 次"/>
             </RelativeLayout> <!-- run history record, End -->  
 <!--             
             <RelativeLayout 

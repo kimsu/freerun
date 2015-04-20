@@ -1,0 +1,64 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/fb_input_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dip"
+            android:background="@color/white" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp" >
+
+            <Button
+                android:id="@+id/fb_send_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:text="send"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/fb_send_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_toLeftOf="@id/fb_send_btn"
+                android:layout_toStartOf="@id/fb_send_btn"
+                android:hint="feedback"
+                android:textSize="18sp" />
+        </RelativeLayout>
+    </LinearLayout>
+
+ <android.support.v4.widget.SwipeRefreshLayout
+     android:id="@+id/fb_reply_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fb_input_layout">
+     <ListView
+        android:id="@+id/fb_reply_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        
+         >
+    </ListView>
+ </android.support.v4.widget.SwipeRefreshLayout>
+     
+
+</RelativeLayout>

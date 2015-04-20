@@ -41,7 +41,7 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 	private OfflineCityMapAdapter mOfflineCityMapAdapter;
 	private MKOfflineMap mOfflineMap;
 	
-	private ArrayList<MKOLUpdateElement> localMapList = null;
+	private static ArrayList<MKOLUpdateElement> localMapList = null;
 	private LocalMapAdapter lAdapter;
 	private ListView localMapListView;
 	private LinearLayout lm;
@@ -71,9 +71,6 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 						Toast.makeText(getApplicationContext(), "Downloading ... ", Toast.LENGTH_LONG).show();
 						Log.d(TAG, String.format("%s : %d%%", update.cityName,
 								update.ratio));
-
-						progressDialog.setProgress(update.ratio);
-
 					}
 				}
 					break;
@@ -94,13 +91,12 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 		initializeData();
 		getExpandableListView().setAdapter(new OfflineCityMapAdapter());
 		getExpandableListView().setDividerHeight(10);
-
-		
 		
 		// the download offline map cities display
 		lm = (LinearLayout) findViewById(R.id.localmap_layout);
 		localMapList = mOfflineMap.getAllUpdateInfo();// 获取已下过的离线地图信息
 		if (localMapList == null) {
+			Log.d(TAG, "onCreate(): localMapList == null");
 			localMapList = new ArrayList<MKOLUpdateElement>();
 			lm.setVisibility(View.GONE);
 		} 
@@ -122,11 +118,9 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 		if (offlineCityList != null) {
 			for (MKOLSearchRecord r : offlineCityList) {
 				mCityList.add(r.cityName + "(" + r.cityID + ")" + "   --"
-						+ this.formatDataSize(r.size));
+						+ formatDataSize(r.size));
 				if(r.childCities != null) {
-					
 					mChildrenCityList.add(r.childCities);
-					
 				}else {
 					List<MKOLSearchRecord> mChildrenCityItem = new ArrayList<MKOLSearchRecord>();
 					mChildrenCityItem.add(r);
@@ -141,7 +135,7 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		this.getExpandableListView().setOnChildClickListener(new OnChildClickListener() {
+		getExpandableListView().setOnChildClickListener(new OnChildClickListener() {
 			
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
@@ -149,20 +143,25 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 				// TODO Auto-generated method stub
 				MKOLSearchRecord record = mChildrenCityList.get(groupPosition).get(childPosition);
 				Log.d(TAG, "Downloading ....");
+				
 				mOfflineMap.start(record.cityID);
-				
-				progressDialog = new ProgressDialog(OfflineMapExpandableList.this);
-				progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-				progressDialog.setMessage("Loading...");
-//				progressDialog.setCancelable(false);
-				progressDialog.show();
-				
 				localMapList = mOfflineMap.getAllUpdateInfo();
-				if (localMapList == null) {
+				if(localMapList == null) {
+					Log.d(TAG, "onChildClick(): localMapList == null");
 					localMapList = new ArrayList<MKOLUpdateElement>();
+				} else {
+					
+					lAdapter.notifyDataSetChanged();
+					
+					Thread progressThread = new ProgressThread(mHandler, localMapList);
+					progressThread.start();
+					
+					progressDialog = new ProgressDialog(OfflineMapExpandableList.this);
+					progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+					progressDialog.setMessage("下载中...");
+					progressDialog.show();
 				}
-				lAdapter.notifyDataSetChanged();
-				lm.setVisibility(View.VISIBLE);
+				
 				return true;
 			}
 		});
@@ -180,6 +179,42 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
             }
 		}
 	};
+	
+	private class ProgressThread extends Thread {
+		Handler handler;
+		ArrayList<MKOLUpdateElement> lMapList;
+		
+		public ProgressThread(Handler h, ArrayList<MKOLUpdateElement> lml ) {
+			handler = h;
+			lMapList = lml;
+
+		}
+		public void run() {
+			Log.d(TAG, "ProgressThread: run()");
+			for(MKOLUpdateElement e : localMapList) {
+				if(e.ratio == 100){
+					continue;
+				} else {
+					while(true) {
+						Message msg = handler.obtainMessage();
+						msg.arg1 = e.ratio;
+						handler.sendMessage(msg);
+						if(e.ratio != 100) {
+							try {
+								sleep(100);
+							} catch (Exception exception) {
+								Log.e(TAG, exception.getMessage());
+								exception.printStackTrace();
+							}
+						} else if(e.ratio == 100) {
+							break;
+						}
+					}
+				}
+			}
+				
+		}
+	}
 
 	class OfflineCityMapAdapter extends BaseExpandableListAdapter {
 
@@ -324,7 +359,6 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 
 		void initViewItem(View view, final MKOLUpdateElement e) {
 			LinearLayout root = (LinearLayout) view.findViewById(R.id.itemEntireRoot);
-			//Button display = (Button) view.findViewById(R.id.display);
 			Button remove = (Button) view.findViewById(R.id.remove);
 			TextView title = (TextView) view.findViewById(R.id.title);
 			TextView update = (TextView) view.findViewById(R.id.update);
@@ -336,11 +370,6 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 			} else {
 				update.setText("最新");
 			}
-//			if (e.ratio != 100) {
-//				display.setEnabled(false);
-//			} else {
-//				display.setEnabled(true);
-//			}
 			remove.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
@@ -355,16 +384,6 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 					
 				}
 			});
-//			display.setOnClickListener(new OnClickListener() {
-//				@Override
-//				public void onClick(View v) {
-//					Intent intent = new Intent();
-//					intent.putExtra("x", e.geoPt.longitude);
-//					intent.putExtra("y", e.geoPt.latitude);
-//					intent.setClass(OfflineMap.this, RunningMainActivity.class);
-//					startActivity(intent);
-//				}
-//			});
 			root.setOnLongClickListener(new OnLongClickListener() {
 				
 				@Override
@@ -379,10 +398,6 @@ public class OfflineMapExpandableList extends ExpandableListActivity {
 
 	}
 	
-	public void onPause() {
-		super.onPause();
-		Log.d(TAG, "MoreSetupChoice, onPause()");
-	}
 	
 	
 }

@@ -130,10 +130,10 @@ public class LoginAndProfileInfo extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
-		getActivity().setTitle(R.string.app_name);
+		
 		mContext = getActivity();
 		getLoaderManager().initLoader(22, null, new MyLoaderCallBacks());
-		mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, getActivity().getApplicationContext());
+		//mTencent = Tencent.createInstance(FreeRunConstants.APP_ID, getActivity().getApplicationContext());
 		mLoginDataPreference = mContext.getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
 				Context.MODE_PRIVATE);
 		mPath = mContext.getCacheDir().getPath();
@@ -252,21 +252,10 @@ private void  onListenMyItemClick() {
 			}
 		});
 		
-		//Enter More setup choice Activity
-//		mMoreSetup.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-//				// TODO Auto-generated method stub
-//				Intent intent = new Intent();
-//				intent.setAction(FreeRunConstants.ACTION_SETUP);
-//				startActivity(intent);
-//			}
-//		});
 	}
 	public  void handleLogin()
 	{ 
-		Log.e(TAG, "handleLogin(), mLogState = " + mLogState, new Exception());
+		//Log.e(TAG, "handleLogin(), mLogState = " + mLogState, new Exception());
 		
 		if(mLogState) {
 			Log.d(TAG, "Login .......");
@@ -631,6 +620,7 @@ private void  onListenMyItemClick() {
 			}else if(msg.what == 1){
 				Bitmap bitmap = (Bitmap)msg.obj;
 				mUserIcon.setImageBitmap(bitmap);
+				
 				if(bitmap != null ) {
 					Log.d(TAG, bitmap.toString());
 				}else {
@@ -834,8 +824,7 @@ private void  onListenMyItemClick() {
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 			// TODO Auto-generated method stub
-			Log.d(TAG, "LoaderManager: onLoadFinished()" + ", mFrequencies = " + mFrequencies);
-			mFrequencies.setText(String.valueOf(cursor.getCount()));
+			Log.d(TAG, "LoaderManager: onLoadFinished()");
 		}
 		
 		//This callback lets you find out when the data is about to be released 

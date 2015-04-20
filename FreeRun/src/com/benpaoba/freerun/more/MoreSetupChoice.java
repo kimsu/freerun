@@ -20,6 +20,7 @@ import com.benpaoba.freerun.LoginAndProfileInfo;
 import com.benpaoba.freerun.R;
 import com.benpaoba.freerun.Utils;
 import com.tencent.tauth.Tencent;
+import com.umeng.fb.FeedbackAgent;
 import com.umeng.update.UmengUpdateAgent;
 
 public class MoreSetupChoice extends Fragment {
@@ -114,7 +115,9 @@ public class MoreSetupChoice extends Fragment {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), CustomActivity.class);
+                startActivity(intent);
 			}
 		});
 	

@@ -52,6 +52,10 @@
         <meta-data
             android:name="UMENG_CHANNEL"
             android:value="Channel ID" />
+        <meta-data
+            android:name="UMENG_MESSAGE_SECRET"
+            android:value="UMENG_MESSAGE_SECRET" >
+        </meta-data>
 
        <activity
             android:name="com.benpaoba.freerun.RunningTabActivity"
@@ -138,6 +142,7 @@
         <!-- 
         <activity 
             android:name="com.benpaoba.freerun.MoreSetupChoice"
+            android:icon="@android:color/holo_green_light"
             android:label="更多"
             android:launchMode="singleTop">
             <intent-filter >
@@ -148,6 +153,7 @@
          -->
         <activity 
             android:name="com.benpaoba.freerun.more.OfflineMapExpandableList"
+            android:icon="@android:color/holo_green_light"
             android:label="离线地图"
             android:launchMode="singleTop">
         </activity>
@@ -161,6 +167,11 @@
             android:name="com.umeng.update.UpdateDialogActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" >
         </activity>
+		
+        <activity android:name="com.benpaoba.freerun.more.CustomActivity">
+            
+        </activity>
+        
     </application>
 
 </manifest>
