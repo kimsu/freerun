@@ -22,9 +22,11 @@ import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -48,6 +50,7 @@ public class WlecomActivity extends Activity {
 	private EditText mUserEmail;
 	private EditText mUserPassword;
 	
+	private ProgressDialog mDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -59,6 +62,7 @@ public class WlecomActivity extends Activity {
 		mRegisterButton = (Button)findViewById(R.id.btn_register);
 		mUserEmail = (EditText)findViewById(R.id.edt_login_username);
 		mUserPassword = (EditText)findViewById(R.id.edt_login_pwd);
+		mDialog = new ProgressDialog(this);
 		mLoginButton.setOnClickListener(new LoginListener());
 		mRegisterButton.setOnClickListener(new ButtonRegister());
 		mWelcomeButton.setOnClickListener(new View.OnClickListener(){
@@ -88,49 +92,67 @@ public class WlecomActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				new Thread (){
-					public void run() {
-						Log.d("yxf","Login, onClick()");
-						HttpClient client = new DefaultHttpClient();
-						List<NameValuePair> list = new ArrayList<NameValuePair>();
-						NameValuePair pair = new BasicNameValuePair("index", "0");
-						list.add(pair);
-						NameValuePair pair1 = new BasicNameValuePair("useremail", mUserEmail.getText().toString());
-						NameValuePair pair2 = new BasicNameValuePair("password",  mUserPassword.getText().toString());
-						
-						list.add(pair1);
-						list.add(pair2);
-						try {
-							UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,"UTF-8");
-							HttpPost post = new HttpPost("http://172.18.65.185:8080/MyFirstWeb/TestServlet");
-							Log.d(TAG,"post: "+  post.getRequestLine());
-							post.setEntity(entity);
-							HttpResponse response = client.execute(post);
-							Log.d(TAG,"response: " + response.getStatusLine());
-							if (response.getStatusLine().getStatusCode() == 200) {
-								InputStream in = response.getEntity().getContent();
-								mHandler.sendEmptyMessage(in.read());//将服务器返回给客户端的标记直接传给handler
-								in.close();
-							}
-						} catch (UnsupportedEncodingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (ClientProtocolException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-					}
-					
-				}.start();
+				 mDialog.setTitle("提示信息");
+	             mDialog.setMessage("正在登陆...");
+	             mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+	             mDialog.setCancelable(false);
+	             new MyAsyncTask().execute();
 			}
-			
 			
 	 }
 
+	public class MyAsyncTask extends AsyncTask<Void, Void, Void>
+    {
+        @Override
+        protected void onPreExecute()
+        {
+            mDialog.show();
+        }
+        
+        @Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+        	mDialog.dismiss();
+		}
+        
+		@Override
+        protected Void doInBackground(Void... params)
+        {
+        	HttpClient client = new DefaultHttpClient();
+			List<NameValuePair> list = new ArrayList<NameValuePair>();
+			NameValuePair pair = new BasicNameValuePair("index", "0");
+			list.add(pair);
+			NameValuePair pair1 = new BasicNameValuePair("useremail", mUserEmail.getText().toString());
+			NameValuePair pair2 = new BasicNameValuePair("password",  mUserPassword.getText().toString());
+			
+			list.add(pair1);
+			list.add(pair2);
+			try {
+				UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,"UTF-8");
+				HttpPost post = new HttpPost("http://172.18.65.185:8080/MyFirstWeb/TestServlet");
+				Log.d(TAG,"post: "+  post.getRequestLine());
+				post.setEntity(entity);
+				HttpResponse response = client.execute(post);
+				Log.d(TAG,"response: " + response.getStatusLine());
+				if (response.getStatusLine().getStatusCode() == 200) {
+					InputStream in = response.getEntity().getContent();
+					mHandler.sendEmptyMessage(in.read());//将服务器返回给客户端的标记直接传给handler
+					in.close();
+				}
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+        }
+    }
+	
 	/**
 	 * 设置register监听
 	 */

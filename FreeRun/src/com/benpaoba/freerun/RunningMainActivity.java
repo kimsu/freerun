@@ -14,11 +14,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+
+import org.apache.http.Header;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -47,6 +51,7 @@ import android.view.ViewTreeObserver;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnPreDrawListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -74,13 +79,16 @@ import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.model.LatLng;
 import com.benpaoba.freerun.database.FreeRunContentProvider;
 import com.benpaoba.freerun.database.RunRecordTable;
-
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.umeng.update.UmengUpdateAgent;
 import com.umeng.update.UpdateConfig;
 
 public class RunningMainActivity extends Activity {
 	public static final String TAG = "FreeRun";
 	
+	private static final String SERVER_PATH = "http://172.16.99.41/MyFirstWeb/Servlet";
 	private final static float DEFAULT_ZOOM_LEVEL = 18.0f;
 	private final static int SAVA_FILE_INTERVALS = 60;
 	private final static float UPPER_ZOOM_LEVEL = 18.0f;
@@ -151,6 +159,7 @@ public class RunningMainActivity extends Activity {
 	private LocationManager mLocationManager;
 	
 	private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+	private ProgressDialog mDialog;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -166,7 +175,7 @@ public class RunningMainActivity extends Activity {
 		mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		mLocationManager.addGpsStatusListener(mGpsStatusListener);
-		
+		mDialog = new ProgressDialog(this);
 		mSportStatus = SportsManager.STATUS_INITIAL;
 		//获取资源
 		mGpsSignalTextView = (TextView) findViewById(R.id.tv_bmap_run_gps);
@@ -369,6 +378,7 @@ public class RunningMainActivity extends Activity {
 				mSoundPlayer.play(SoundClips.COMPLETE_SPORT,0,0,0);
 				cancelTimer();
 				
+				
 				if(mCurrentDistance < 10) {
 					RunningMainActivity.this.getContentResolver().delete(mInsertUri,
 							RunRecordTable.COLUMN_ID + "=?",
@@ -391,13 +401,8 @@ public class RunningMainActivity extends Activity {
 			                        new String[] {mInsertUri.getLastPathSegment()}
 							);		
 				    savePointsToFiles(mPointLists, mSaveFile);
+				    uploadFile(mSaveFile);
 				    mPointLists.clear();
-				    Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
-				    intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
-				    intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
-				    intent.putExtra("total_distance",mCurrentDistance);
-				    intent.putExtra("start_time",mStartTime);
-				    startActivity(intent);
 				}
 				//clear all the overlays
 				mBaiduMap.clear();
@@ -430,6 +435,71 @@ public class RunningMainActivity extends Activity {
 		}
 	};
 
+	 
+	private void uploadFile(File saveFile) {
+		AsyncHttpClient client = new AsyncHttpClient();
+    	RequestParams requestParams = new RequestParams();
+    	requestParams.put("index", 3);
+		try {
+			requestParams.put("upload_file", saveFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		client.post(SERVER_PATH, requestParams,
+				new AsyncHttpResponseHandler() {
+					@Override
+					public void onStart() {
+						// TODO Auto-generated method stub
+						mDialog.setTitle("提示信息");
+		                mDialog.setMessage("正在上传数据至服务器。。。");
+		                mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		                mDialog.setCancelable(false);
+						mDialog.show();
+					}
+
+					@Override
+					public void onSuccess(int statusCode,
+							Header[] headers, byte[] responseBody) {
+						mDialog.dismiss();
+						Log.d(TAG, "onSuccess==========" + statusCode);
+						for (int i = 0; i < headers.length; i++) {
+							Log.d(TAG, "&&&&&&" + headers[i]);
+						}
+						startSportsDetailsActivity();
+					}
+
+					@Override
+					public void onFailure(int statusCode,
+							Header[] headers,
+							byte[] responseBody, Throwable error) {
+						mDialog.dismiss();
+						
+						Log.d(TAG, "onFailure ==========" + statusCode);
+						if (headers != null) {
+							for (int i = 0; i < headers.length; i++) {
+								Log.d(TAG, "&&&&&&" + headers[i]);
+							}
+						}
+						if(responseBody != null) {
+						Log.d(TAG, "********"
+								+ new String(responseBody));
+						}
+						startSportsDetailsActivity();
+					}
+				});
+	}
+	
+	private void startSportsDetailsActivity() {
+		Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
+	    intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
+	    intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
+	    intent.putExtra("total_distance",mCurrentDistance);
+	    intent.putExtra("start_time",mStartTime);
+	    startActivity(intent);
+	}
+	
 	private boolean isCounterCancelled = false;
 	final Runnable mCounter = new Runnable() {  
         int counterValue  = INITIAL_COUNTER_VALUE;
