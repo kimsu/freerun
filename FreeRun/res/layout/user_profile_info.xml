@@ -262,7 +262,6 @@
         
             <RelativeLayout 
 				android:id="@+id/run_history"
-				android:background="@color/white" 
 				android:layout_width="fill_parent"
 				android:layout_height="54dip"
 				android:layout_marginTop="18dip"

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.benpaoba.freerun"
-    android:versionCode="9"
-    android:versionName="0.3" >
+    android:versionCode="13"
+    android:versionName="0.5" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -57,13 +57,19 @@
             android:value="UMENG_MESSAGE_SECRET" >
         </meta-data>
 
-       <activity
-            android:name="com.benpaoba.freerun.RunningTabActivity"
-            android:label="@string/title_activity_running_tab" >
+        <activity
+            android:name="com.benpaoba.freerun.WlecomActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        
+        <activity
+            android:name="com.benpaoba.freerun.RunningTabActivity"
+            android:label="@string/title_activity_running_tab" >
+            
         </activity>
         <!-- QQ 接入配置 -->
         <activity
@@ -171,7 +177,9 @@
         <activity android:name="com.benpaoba.freerun.more.CustomActivity">
             
         </activity>
-        
+       
+        <activity android:name="com.benpaoba.freerun.Agreement" />
+        <activity android:name="com.benpaoba.freerun.Register" />
     </application>
 
 </manifest>
