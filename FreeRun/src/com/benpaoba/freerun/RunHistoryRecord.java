@@ -136,11 +136,15 @@ public class RunHistoryRecord extends Activity {
 							final double distance = cursor.getDouble(cursor.getColumnIndex(RunRecordTable.COLUMN_DISTANCE));
 			                final long timeMilliSeconds  = cursor.getLong(cursor.getColumnIndex(RunRecordTable.COLUMN_DATE));
 			                final long usedTime = cursor.getLong(cursor.getColumnIndex(RunRecordTable.COLUMN_USEDTIME));
+			                final String location = cursor.getString(cursor.getColumnIndex(RunRecordTable.COLUMN_FILE_LOCATION));
+			                final int recordId = cursor.getInt(cursor.getColumnIndex(RunRecordTable.COLUME_SERVER_RECORD_ID));
 			                Intent intent = new Intent(mContext, HistoryDetailsActivity.class);
 			                intent.putExtra("_id", cursorId);
 							intent.putExtra("total_time", usedTime);
 							intent.putExtra("start_time", timeMilliSeconds);
 							intent.putExtra("total_distance",distance);
+							intent.putExtra("file_location", location);
+							intent.putExtra("record_id", recordId);
 							startActivity(intent);
 						}
 					});
@@ -186,13 +190,16 @@ public class RunHistoryRecord extends Activity {
                 final double distance = cursor.getDouble(cursor.getColumnIndex(RunRecordTable.COLUMN_DISTANCE));
                 final long timeMilliSeconds  = cursor.getLong(cursor.getColumnIndex(RunRecordTable.COLUMN_DATE));
                 final long usedTime = cursor.getLong(cursor.getColumnIndex(RunRecordTable.COLUMN_USEDTIME));
+                final int recordId = cursor.getInt(cursor.getColumnIndex(RunRecordTable.COLUME_SERVER_RECORD_ID));
+                final String location = cursor.getString(cursor.getColumnIndex(RunRecordTable.COLUMN_FILE_LOCATION));
                 String[] dateAndTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timeMilliSeconds).split(" ");
                 date.setText(dateAndTime[0]);
                 time.setText(dateAndTime[1]);
                 
                 TextView usedTimeView = (TextView)view.findViewById(R.id.textViewTimeContent);
                 usedTimeView.setText(TimeFormatHelper.formatTime(usedTime));
-                Log.d("yxf","getView, positon = " + position + ", distance = " + distance);
+                Log.d(RunningMainActivity.TAG,"getView, positon = " + position + ", distance = " + distance + 
+                		", recordId = " + recordId);
                 distanceView.setText((distance != 0) ? Utils.formatDoubleValue(distance/1000):"0.00");
                 
                 arrowImage.setOnClickListener(new View.OnClickListener() {
@@ -205,6 +212,8 @@ public class RunHistoryRecord extends Activity {
 						intent.putExtra("total_time", usedTime);
 						intent.putExtra("start_time", timeMilliSeconds);
 						intent.putExtra("total_distance",distance);
+						intent.putExtra("file_location", location);
+						intent.putExtra("record_id", recordId);
 						startActivity(intent);
 					}
 				});

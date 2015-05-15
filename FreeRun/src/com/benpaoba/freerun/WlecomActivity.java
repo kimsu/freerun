@@ -3,6 +3,7 @@ package com.benpaoba.freerun;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -95,7 +97,7 @@ public class WlecomActivity extends Activity {
 				 mDialog.setTitle("提示信息");
 	             mDialog.setMessage("正在登陆...");
 	             mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-	             mDialog.setCancelable(false);
+	             mDialog.setCancelable(true);
 	             new MyAsyncTask().execute();
 			}
 			
@@ -172,7 +174,6 @@ public class WlecomActivity extends Activity {
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			super.handleMessage(msg);
-			Log.d("yxf","handleMessage, msg.what = " + msg.what);
 			if (msg.what == 1) {//当服务器返回给客户端的标记为1时，说明登陆成功
 				SharedPreferences loginDataPreference = getSharedPreferences(
 						FreeRunConstants.PROFILE_INFO_PREFERENCES,

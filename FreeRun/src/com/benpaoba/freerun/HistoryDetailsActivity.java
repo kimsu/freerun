@@ -2,21 +2,26 @@ package com.benpaoba.freerun;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Environment;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.apache.http.Header;
 
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener;
@@ -46,6 +51,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.util.DisplayMetrics;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.umeng.socialize.controller.UMServiceFactory;
 import com.umeng.socialize.controller.UMSocialService;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -77,11 +85,13 @@ public class HistoryDetailsActivity extends Activity implements
 	private GeoCoder mSearch;
 	private File mDataFile;
 	private DataInputStream mInput;
-
+    private String mFileLocation;
+	
 	private long mStartTime;
 	private long mTotalTime;
 	private double mTotalDistance;
 	private int mId;
+	private int mServerRecordId;
 	
 	private TextView mTimeTextView;
 	private TextView mTotalTimeTextView;
@@ -119,7 +129,10 @@ public class HistoryDetailsActivity extends Activity implements
             mTotalTime = bundle.getLong("total_time");
             mTotalDistance = bundle.getDouble("total_distance");
             mStartTime = bundle.getLong("start_time");
+            mFileLocation = bundle.getString("file_location");
+            mServerRecordId = bundle.getInt("record_id");
         }
+        Log.d(TAG,"HistoryDetailActivity, mServerRecordId = " + mServerRecordId + ", location = " + mFileLocation);
         mTimeTextView = (TextView)findViewById(R.id.tv_start_time); 
         mTotalTimeTextView = (TextView)findViewById(R.id.tv_total_time);
         mTotalDistanceTextView = (TextView)findViewById(R.id.tv_total_distance);
@@ -146,8 +159,7 @@ public class HistoryDetailsActivity extends Activity implements
 		mBaiduMap.setOnMapLoadedCallback(mMapLoadedCallback);
 		mBaiduMap.setOnMapStatusChangeListener(mMapStatusChangeListener);
 		mSearch = GeoCoder.newInstance();
-		mDataFile = new File(SportsManager.POINTS_DIR,
-				SportsManager.POINTS_FILE + mId + SportsManager.SUFFIX);
+		mDataFile = new File(mFileLocation);
 		mPointLists = (ArrayList<LatLng>) readPointsFromFile();
 		DistanceComputeInterface distanceComputeInterface = DistanceComputeImpl.getInstance();
         Log.d(TAG,"mPointList : " + mPointLists + ", size:" + ((mPointLists==null) ? 0 : mPointLists.size()));
@@ -310,15 +322,19 @@ public class HistoryDetailsActivity extends Activity implements
 				return null;
 			}
 			mInput = new DataInputStream(new FileInputStream(mDataFile));
+			int i = 0;
 			while (flag) {
 				latitude = mInput.readDouble();
 				mInput.readChar();
 				longitude = mInput.readDouble();
 				mInput.readChar();
 				dataList.add(new LatLng(latitude, longitude));
+				Log.d("yxf","i = " + i + ", lat = " + latitude + ", longtitude = " + longitude);
+				i++;
 			}
 		} catch (EOFException e) {
 			flag = false;
+			Log.d("yxf","flag = false, end~~~~~~~~~~");
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -395,6 +411,27 @@ public class HistoryDetailsActivity extends Activity implements
         //final UMImage shareImage;
         mBaiduMap.snapshot(new SnapshotReadyCallback() {
 			public void onSnapshotReady(Bitmap snapshot) {
+				File file = new File(Environment.getExternalStorageDirectory(),"test.png");
+				FileOutputStream out;
+				try {
+					out = new FileOutputStream(file);
+					if (snapshot.compress(
+							Bitmap.CompressFormat.PNG, 100, out)) {
+						out.flush();
+						out.close();
+					}
+					Toast.makeText(HistoryDetailsActivity.this,
+							"屏幕截图成功，图片存在: " + file.toString(),
+							Toast.LENGTH_SHORT).show();
+					updateImagetoServer(file);
+					
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				
 				UMImage shareImage = new UMImage(HistoryDetailsActivity.this, snapshot);
 				// 视频分享
 		        UMVideo video = new UMVideo(
@@ -408,12 +445,11 @@ public class HistoryDetailsActivity extends Activity implements
 		        uMusic.setAuthor(getResources().getString(R.string.app_name));
 		        uMusic.setTitle(getResources().getString(R.string.share_title));
 		        uMusic.setThumb(shareImage);
-		        uMusic.setThumb("http://www.umeng.com/images/pic/social/chart_1.png");
 		        
 		        WeiXinShareContent weixinContent = new WeiXinShareContent();
 		        weixinContent.setShareContent(shareContent + "--微信");
 		        weixinContent.setTitle(getResources().getString(R.string.share_title));
-		        weixinContent.setTargetUrl("http://www.umeng.com/social");
+		        weixinContent.setTargetUrl(SportsManager.HTTP_QUERY_PATH + mServerRecordId);
 		        weixinContent.setShareMedia(shareImage);
 		        mController.setShareMedia(weixinContent);
 
@@ -424,19 +460,18 @@ public class HistoryDetailsActivity extends Activity implements
 		        circleMedia.setShareMedia(shareImage);
 		        // circleMedia.setShareMedia(uMusic);
 		        // circleMedia.setShareMedia(video);
-		        circleMedia.setTargetUrl("http://www.umeng.com/social");
+		        circleMedia.setTargetUrl(SportsManager.HTTP_QUERY_PATH + mServerRecordId);
 		        mController.setShareMedia(circleMedia);
 
 
-		        UMImage qzoneImage = new UMImage(HistoryDetailsActivity.this,
-		                "http://www.umeng.com/images/pic/social/integrated_3.png");
+		        UMImage qzoneImage = shareImage;
 		        qzoneImage
-		                .setTargetUrl("http://www.umeng.com/images/pic/social/integrated_3.png");
+		                .setTargetUrl(SportsManager.HTTP_QUERY_PATH + mServerRecordId);
 
 		        // 设置QQ空间分享内容
 		        QZoneShareContent qzone = new QZoneShareContent();
 		        qzone.setShareContent(shareContent + "--QQ空间");
-		        qzone.setTargetUrl("http://www.umeng.com");
+		        qzone.setTargetUrl(SportsManager.HTTP_QUERY_PATH + mServerRecordId);
 		        qzone.setTitle(getResources().getString(R.string.share_title));
 		        qzone.setShareMedia(shareImage);
 		        //qzone.setShareMedia(uMusic);
@@ -448,8 +483,8 @@ public class HistoryDetailsActivity extends Activity implements
 		        QQShareContent qqShareContent = new QQShareContent();
 		        qqShareContent.setShareContent(shareContent + "--QQ分享");
 		        qqShareContent.setTitle(getResources().getString(R.string.share_title));
-		        qqShareContent.setShareMedia(uMusic);
-		        qqShareContent.setTargetUrl("http://www.umeng.com/social");
+		        //qqShareContent.setShareMedia(uMusic);
+		        qqShareContent.setTargetUrl(SportsManager.HTTP_QUERY_PATH + mServerRecordId);
 		        mController.setShareMedia(qqShareContent);
 
 		        // 视频分享
@@ -484,6 +519,41 @@ public class HistoryDetailsActivity extends Activity implements
         
     }
 
+    
+    private void updateImagetoServer(File bitmap) {
+    	AsyncHttpClient client = new AsyncHttpClient();
+    	RequestParams requestParams = new RequestParams();
+    	requestParams.put("index", SportsManager.UPDATE_IMAGE_TO_SERVER);
+    	requestParams.put("server_record_id", mServerRecordId);
+    	Log.d(TAG,"mServerRecordId = " + mServerRecordId);
+		try {
+			requestParams.put("upload_file", bitmap);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		client.post(SportsManager.SERVER_PATH, requestParams,
+				new AsyncHttpResponseHandler() {
+					@Override
+					public void onStart() {
+						// TODO Auto-generated method stub
+					}
+
+					@Override
+					public void onSuccess(int statusCode,
+							Header[] headers, byte[] responseBody) {
+						Log.d(TAG,"yxf, responseBody  = " + new String(responseBody));
+					}
+
+					@Override
+					public void onFailure(int statusCode,
+							Header[] headers,
+							byte[] responseBody, Throwable error) {
+						
+						Log.d(TAG, "onFailure ==========" + statusCode);
+					}
+		});
+    }
 	
 	@Override
 	protected void onPause() {

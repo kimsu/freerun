@@ -17,6 +17,9 @@ public class RunRecordTable {
 	    public static final String COLUMN_HALF_MAR = "halfMarathonTime";
 	    public static final String COLUMN_FULL_MAR = "fullMarathonTime";
 	    public static final String COLUMN_COSTENERGY ="cost_energy";
+	    public static final String COLUMN_FILE_LOCATION = "file_location";
+	    public static final String COLUME_RECORD_ID = "record_id";
+	    public static final String COLUME_SERVER_RECORD_ID = "server_record_id";
 
 	    
 	    private static final String DATABASE_CREATE = "create table if not exists " + TABLE_RUN_RECORD
@@ -26,6 +29,8 @@ public class RunRecordTable {
 	    		+ COLUMN_DISTANCE + " DOUBLE, " 
 	    		+ COLUMN_USEDTIME + " LONG, " 
 	    		+ COLUMN_COSTENERGY + " LONG, "
+	    		+ COLUMN_FILE_LOCATION + " TEXT, "
+	    		+ COLUME_SERVER_RECORD_ID + " Integer, "
 	    		+ COLUMN_FIVE + " LONG, " 
 	    		+ COLUMN_TEN + " LONG, " 
 	    		+ COLUMN_HALF_MAR + " LONG, " 

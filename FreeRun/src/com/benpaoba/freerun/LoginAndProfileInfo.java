@@ -2,9 +2,14 @@ package com.benpaoba.freerun;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.http.Header;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +19,9 @@ import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
@@ -42,6 +49,9 @@ import android.widget.TextView;
 
 import com.benpaoba.freerun.database.FreeRunContentProvider;
 import com.benpaoba.freerun.database.RunRecordTable;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.tencent.connect.UserInfo;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
@@ -80,8 +90,6 @@ public class LoginAndProfileInfo extends Fragment {
 	 static final String TOTALCALORIES = "total_calories";
 	 static final String WELCOMED = "welcomed";
 	 
-	 
-	
 	//The best Record
 	private	TextView mFastestSpeedMatch;
 	private	TextView mLogestDistance;
@@ -123,7 +131,7 @@ public class LoginAndProfileInfo extends Fragment {
 	private Cursor mCursor;
 	
 	private Context mContext;
-	
+	private boolean mIsLatestState = false;
 	
 	
 	@Override
@@ -139,8 +147,59 @@ public class LoginAndProfileInfo extends Fragment {
 		mPath = mContext.getCacheDir().getPath();
 		mLogState = mLoginDataPreference.getBoolean(LOGSTATE, false);
 		handleLogin();
+		updateHistoryRecordFromServer();
 		onListenMyItemClick();
 		
+	}
+	
+	private void updateHistoryRecordFromServer() {
+		AsyncHttpClient client = new AsyncHttpClient();
+    	RequestParams requestParams = new RequestParams();
+    	requestParams.put("index", SportsManager.QUERY_FROM_SERVER);
+    	requestParams.put("user_id", 1234);
+        mIsLatestState = mLoginDataPreference.getBoolean("is_latest", false);
+        Log.d(TAG,"updateHistoryRecoedFromServer, mIsLatestState = " + mIsLatestState);
+    	if(true) {
+    		client.post(SportsManager.SERVER_PATH, requestParams,
+    				new AsyncHttpResponseHandler() {
+    			        ProgressDialog dialog = new ProgressDialog(getActivity());
+    					@Override
+    					public void onStart() {
+    						// TODO Auto-generated method stub
+    						dialog.setTitle("提示信息");
+    		                dialog.setMessage("正在同步服务器的数据至本地。。。");
+    		                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+    		                dialog.setCancelable(true);
+    						dialog.show();
+    					}
+
+    					@Override
+    					public void onFailure(int statusCode,
+    							Header[] headers, byte[] responseBody,Throwable error) {
+    						// TODO Auto-generated method stub
+    						Log.d(TAG, "onFailure ==========" + statusCode + ", headers = " + headers);
+    						
+    						Message msg = new Message();
+    						msg.obj = responseBody;
+    						msg.what = 3;
+    						mHandler.sendMessage(msg);
+    						dialog.dismiss();
+    					}
+
+    					@Override
+    					public void onSuccess(int statusCode,
+    							Header[] headers, byte[] responseBody) {
+    						// TODO Auto-generated method stub
+    						Log.d(TAG, "onSuccess ==========" + statusCode + ", headers = " + headers);
+    						Message msg = new Message();
+    						msg.obj = responseBody;
+    						msg.what = 2;
+    						mHandler.sendMessage(msg);
+    						mLoginDataPreference.edit().putBoolean("is_latest", true).commit();
+    						dialog.dismiss();
+    					}
+        	});
+        }
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -179,7 +238,7 @@ public class LoginAndProfileInfo extends Fragment {
 		mShortestTimeFive = (TextView)view.findViewById(R.id.shortest_time_five);
 		mShortestTimeTen = (TextView)view.findViewById(R.id.shortest_time_ten);
 		mShortestTimeHalfMarathon = (TextView)view.findViewById(R.id.shortest_time_half_marathon);
-		mShortestTimeFullMarathon = (TextView)view.findViewById(R.id.shortest_time_full_marathon);
+		//mShortestTimeFullMarathon = (TextView)view.findViewById(R.id.shortest_time_full_marathon);
 		
 		//run history record
 		mFrequencies = (TextView)view.findViewById(R.id.record_history_times);
@@ -246,6 +305,7 @@ private void  onListenMyItemClick() {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				Log.d(TAG,"onClick(), ");
 				Intent intent = new Intent();
 				intent.setAction(FreeRunConstants.ACTION_CHECK_RECORD);
 				startActivity(intent);
@@ -298,6 +358,7 @@ private void  onListenMyItemClick() {
 //					mLoginDataPreference.getString(SHORTESTTIME_FM, "nothing"));
 //		
 			//the history run times
+			Log.d(TAG,"mFrencies : " + mLoginDataPreference.getInt(HISTORYTIMES, 0));
 			mFrequencies.setText(
 					mLoginDataPreference.getInt(HISTORYTIMES, 0) + "次");
 			
@@ -342,6 +403,7 @@ private void  onListenMyItemClick() {
 //				energyColumn = mCursor.getColumnIndex(RunRecordTable.COLUMN_COSTENERGY);
 				
 				//update the run frequencies
+				Log.d(TAG,"mCursor.getCount= " + mCursor.getCount());
 				mFrequencies.setText(mCursor.getCount() + "次");
 					
 
@@ -539,7 +601,6 @@ private void  onListenMyItemClick() {
 		Log.d(TAG, "LoginAndProfileInfo: updateUserInfo() " + " isSessionValid = " + mTencent.isSessionValid());
 		if (mTencent != null && mTencent.isSessionValid()) {
 			IUiListener listener = new IUiListener() {
-
 				@Override
 				public void onError(UiError e) {
 
@@ -635,11 +696,105 @@ private void  onListenMyItemClick() {
 					e.printStackTrace();
 				}
 				
+			}else if(msg.what == 2) {
+				byte[] data = (byte[]) msg.obj;
+				String str = new String(data);
+				try {
+					JSONObject jsonObject = new JSONObject(str);
+					JSONArray jsonArray = jsonObject.getJSONArray("detail_list");
+					Log.d(TAG,"jsonArray length : " + jsonArray.length());
+					mFrequencies.setText(jsonArray.length() + "次");
+					saveJsonToFile(str);
+					saveJsontoDatabase(jsonObject);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 
 	};
 	
+	
+	private void saveJsonToFile(String str) {
+		File file = getActivity().getFilesDir();
+		Log.d(TAG,"saveJsonToFile, file = " + file.getAbsolutePath());
+		FileOutputStream out;
+		try {
+			File saveFile = new File(file, SportsManager.SPORTS_JSON_FILE);
+			if(saveFile.exists()) {
+				saveFile.delete();
+			}
+			saveFile.createNewFile();
+			out = new FileOutputStream(saveFile);
+			out.write(str.getBytes());
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void saveJsontoDatabase(JSONObject jsonObject) {
+		try {
+			List<SportsDetails> details = new ArrayList<SportsDetails>();
+			JSONArray jsonArray = jsonObject.getJSONArray("detail_list");
+			for(int i = 0; i < jsonArray.length(); i++) {
+				JSONObject object = jsonArray.getJSONObject(i);
+				SportsDetails detail = new SportsDetails.Builder(object.getString("userId"))
+				        .setSportsDate(object.getLong("date"))
+				        .setUsedTime(object.getLong("usedTime"))
+				        .setDistance(object.getDouble("distance"))
+				        .setDataFilePath(object.getString("dataFilePath"))
+				        .build();
+				Log.d(TAG," i = " + i + ", " + detail.getUserId() + ", " + detail.getDate() + ", " + detail.getUsedTime() +
+						", " + detail.getDataFilePath());
+				details.add(detail);
+			}
+			Cursor cursor = getActivity().getContentResolver().query(FreeRunContentProvider.CONTENT_URI, null, null, null, null);
+			
+			Log.d(TAG,"cursor.getCount() = " + cursor.getCount());
+			if(details.size() != cursor.getCount()) {
+			    new DownloadTask(details).start();
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	class DownloadTask extends Thread{
+		private List<SportsDetails> details;
+		
+		public DownloadTask(List<SportsDetails> details) {
+			this.details = details;
+		}
+
+		@Override
+		public void run() {
+			
+			// TODO Auto-generated method stub
+			for(SportsDetails detail : details) {
+				
+				File downloadFile = Utils.getDownloadFile(detail.getDataFilePath());
+				Log.d(TAG,"DownloadTask, run(). details = " + details + "downloadFile.getPath = " + 
+				downloadFile.getAbsolutePath());
+			    ContentValues values = new ContentValues();
+			    values.put(RunRecordTable.COLUMN_DATE,detail.getDate());
+			    values.put(RunRecordTable.COLUMN_USEDTIME,detail.getUsedTime());
+			    values.put(RunRecordTable.COLUMN_DISTANCE,detail.getDistance());
+			    values.put(RunRecordTable.COLUMN_FILE_LOCATION, downloadFile.getAbsolutePath());
+			    getActivity().getContentResolver().insert(FreeRunContentProvider.CONTENT_URI, values);
+			    
+			}
+		}
+		
+	}
 	public void onResume() {
 		super.onResume();
 		//user simple Info

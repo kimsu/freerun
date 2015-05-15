@@ -1,6 +1,8 @@
 package com.benpaoba.freerun;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -31,6 +33,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.LocationManager;
@@ -75,6 +78,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.map.BaiduMap.SnapshotReadyCallback;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.model.LatLng;
 import com.benpaoba.freerun.database.FreeRunContentProvider;
@@ -88,7 +92,6 @@ import com.umeng.update.UpdateConfig;
 public class RunningMainActivity extends Activity {
 	public static final String TAG = "FreeRun";
 	
-	private static final String SERVER_PATH = "http://172.16.99.41/MyFirstWeb/Servlet";
 	private final static float DEFAULT_ZOOM_LEVEL = 18.0f;
 	private final static int SAVA_FILE_INTERVALS = 60;
 	private final static float UPPER_ZOOM_LEVEL = 18.0f;
@@ -136,8 +139,7 @@ public class RunningMainActivity extends Activity {
     private Context mContext;
     private static final int SPEED = 30;
 	private static final int SLEEP_TIME = 5;
-	
-	
+
 	private boolean hasMeasured = false;
 	private boolean isScrolling = false;
 	
@@ -379,7 +381,7 @@ public class RunningMainActivity extends Activity {
 				cancelTimer();
 				
 				
-				if(mCurrentDistance < 10) {
+				/*if(mCurrentDistance < 10) {
 					RunningMainActivity.this.getContentResolver().delete(mInsertUri,
 							RunRecordTable.COLUMN_ID + "=?",
 			                        new String[] {mInsertUri.getLastPathSegment()});		
@@ -390,18 +392,19 @@ public class RunningMainActivity extends Activity {
 				            null,
 				            null).show();
 				    
-				} else {
+				} else */{
 					ContentValues values = new ContentValues();
 					values.put(RunRecordTable.COLUMN_DATE,mStartTime);
 					values.put(RunRecordTable.COLUMN_USEDTIME,mCurrentIndividualStatusSeconds);
 					values.put(RunRecordTable.COLUMN_DISTANCE,mCurrentDistance);
-					RunningMainActivity.this.getContentResolver().update(mInsertUri,
-							values,
-							RunRecordTable.COLUMN_ID + "=?",
-			                        new String[] {mInsertUri.getLastPathSegment()}
-							);		
+					values.put(RunRecordTable.COLUMN_FILE_LOCATION, mSaveFile.getAbsolutePath());
+					mInsertUri = RunningMainActivity.this.getContentResolver().
+							insert(FreeRunContentProvider.CONTENT_URI, values);
 				    savePointsToFiles(mPointLists, mSaveFile);
-				    uploadFile(mSaveFile);
+					uploadFile(Integer.valueOf(mInsertUri.getLastPathSegment()),
+					   		mSaveFile,1234,mStartTime, 
+					   		mCurrentIndividualStatusSeconds,mCurrentDistance);
+				    
 				    mPointLists.clear();
 				}
 				//clear all the overlays
@@ -436,18 +439,23 @@ public class RunningMainActivity extends Activity {
 	};
 
 	 
-	private void uploadFile(File saveFile) {
+	private void uploadFile(int sportId, File saveFile, int userId, long date, long usedTime, double distance) {
 		AsyncHttpClient client = new AsyncHttpClient();
     	RequestParams requestParams = new RequestParams();
-    	requestParams.put("index", 3);
+    	requestParams.put("sport_id", sportId);
+    	requestParams.put("index", SportsManager.UPLOAD_SPORTS_DETAILS);
+    	requestParams.put("user_id", String.valueOf(userId));
+    	requestParams.put("date", date);
+    	requestParams.put("used_time", usedTime);
+    	requestParams.put("distance", distance);
+    	
 		try {
 			requestParams.put("upload_file", saveFile);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		client.post(SERVER_PATH, requestParams,
+		client.post(SportsManager.SERVER_PATH, requestParams,
 				new AsyncHttpResponseHandler() {
 					@Override
 					public void onStart() {
@@ -467,7 +475,11 @@ public class RunningMainActivity extends Activity {
 						for (int i = 0; i < headers.length; i++) {
 							Log.d(TAG, "&&&&&&" + headers[i]);
 						}
-						startSportsDetailsActivity();
+						Log.d(TAG,"yxf, responseBody  = " + new String(responseBody));
+
+						int recordId = Integer.valueOf(new String(responseBody));
+						updateLocalDatabase(recordId);
+						startSportsDetailsActivity(recordId);
 					}
 
 					@Override
@@ -482,21 +494,34 @@ public class RunningMainActivity extends Activity {
 								Log.d(TAG, "&&&&&&" + headers[i]);
 							}
 						}
+						Log.d(TAG,"yxf, responseBody  = " + responseBody);
 						if(responseBody != null) {
-						Log.d(TAG, "********"
-								+ new String(responseBody));
-						}
-						startSportsDetailsActivity();
+						final int recordId = Integer.valueOf(new String(responseBody));
+						updateLocalDatabase(recordId);
+						startSportsDetailsActivity(recordId);
 					}
-				});
+				}
+		});
 	}
 	
-	private void startSportsDetailsActivity() {
+	private void updateLocalDatabase(int recordId) {
+		ContentValues values = new ContentValues();
+		values.put(RunRecordTable.COLUME_SERVER_RECORD_ID,recordId);
+		RunningMainActivity.this.getContentResolver().update(mInsertUri,
+				values,
+				RunRecordTable.COLUMN_ID + "=?",
+                        new String[] {mInsertUri.getLastPathSegment()}
+				);
+	}
+	
+	private void startSportsDetailsActivity(int recordId) {
 		Intent intent = new Intent(RunningMainActivity.this, HistoryDetailsActivity.class);
 	    intent.putExtra("_id",Integer.valueOf(mInsertUri.getLastPathSegment()));
 	    intent.putExtra("total_time", mCurrentIndividualStatusSeconds);
 	    intent.putExtra("total_distance",mCurrentDistance);
 	    intent.putExtra("start_time",mStartTime);
+	    intent.putExtra("file_location", mSaveFile.getAbsolutePath());
+	    intent.putExtra("record_id",recordId);
 	    startActivity(intent);
 	}
 	
@@ -545,12 +570,10 @@ public class RunningMainActivity extends Activity {
 		mRightButton.setVisibility(View.VISIBLE);
 		mLockImageButton.setVisibility(View.VISIBLE);
 		mRunningStateLayout.setVisibility(View.VISIBLE);
-		ContentValues values = new ContentValues();
-		values.put(RunRecordTable.COLUMN_DATE,mStartTime);
-		mInsertUri = RunningMainActivity.this.getContentResolver().
-				insert(FreeRunContentProvider.CONTENT_URI, values);
-		mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE
-				+ mInsertUri.getLastPathSegment() + SportsManager.SUFFIX);
+		
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+		mSaveFile = new File(SportsManager.POINTS_DIR,SportsManager.POINTS_FILE_PREFIX
+				+ df.format(new Date()) + SportsManager.SUFFIX);
 		if(mSaveFile.exists()) {
 			mSaveFile.delete();
 		}
@@ -608,7 +631,7 @@ public class RunningMainActivity extends Activity {
 			Log.d(TAG,
 					"onReceiveLocation(),getLatitude = "
 							+ location.getLatitude() + ", getLongitude = "
-							+ location.getLongitude()
+							+ location.getLongitude() 
 							+ ", networkLocationType: "
 							+ location.getNetworkLocationType()
 							+ ", locationType:" + location.getLocType() + ", Thread :"+Thread.currentThread().getId());
@@ -636,8 +659,8 @@ public class RunningMainActivity extends Activity {
 			mUpdateCenterLocationIntervals++;
 			// draw the sports path
 			if (mSportStatus == SportsManager.STATUS_RUNNING && 
-					(location.getLocType() == BDLocation.TypeGpsLocation /*||
-					(location.getLocType() == BDLocation.TypeNetWorkLocation)*/)) {
+					(location.getLocType() == BDLocation.TypeGpsLocation ||
+					(location.getLocType() == BDLocation.TypeNetWorkLocation))) {
 				LatLng currentPoint = new LatLng(location.getLatitude(),
 						location.getLongitude());
 				List<LatLng> pointLists = new ArrayList<LatLng>();
@@ -685,8 +708,8 @@ public class RunningMainActivity extends Activity {
 		public String call() throws Exception {
 			// TODO Auto-generated method stub
 			if(mSportStatus == SportsManager.STATUS_RUNNING && 
-					(mLocation.getLocType() == BDLocation.TypeGpsLocation /*||
-					mLocation.getLocType() == BDLocation.TypeNetWorkLocation*/)) {
+					(mLocation.getLocType() == BDLocation.TypeGpsLocation ||
+					mLocation.getLocType() == BDLocation.TypeNetWorkLocation)) {
 				
 				mCurrentGpsLocation = new GpsLocation(mLocation.getLatitude(), mLocation.getLongitude());
                 double addedDistance = 0.0f;
@@ -736,6 +759,7 @@ public class RunningMainActivity extends Activity {
 	             }
                  mOutPut = new DataOutputStream(new FileOutputStream(fileName,true));
                  for(LatLng point : lists) {
+                	 Log.d(TAG,"point: " + point.latitude + ", " + point.longitude);
                      if(mOutPut != null) {
                     	 mOutPut.writeDouble(point.latitude);
                     	 mOutPut.writeChar('\t');
@@ -751,6 +775,7 @@ public class RunningMainActivity extends Activity {
 			 }
              
              try {
+            	 mOutPut.flush();
 	             mOutPut.close();
 	         } catch (IOException e) {
 		         // TODO Auto-generated catch block

@@ -1,8 +1,10 @@
 package com.benpaoba.freerun;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -422,7 +424,44 @@ public class Utils {
 		return String.format("%.2f",formatDistance);
 	}
 	
-	
+	public static File getDownloadFile(String fileUri) {
+		Log.d(TAG,"getDownloadFile, fileUri = " + fileUri);
+		File file;
+		URL myFileUrl = null;
+		try {
+			myFileUrl = new URL(fileUri);
+		} catch (MalformedURLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		try {
+			
+			HttpURLConnection conn = (HttpURLConnection) myFileUrl
+					.openConnection();
+			conn.setDoInput(true);
+			conn.connect();
+			file = new File(SportsManager.POINTS_DIR,Uri.parse(fileUri).getLastPathSegment());
+			Log.d(TAG,"getDownloadFile, file.toString() = " + file.getAbsolutePath());
+			if(!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			file.createNewFile();
+			OutputStream out = new FileOutputStream(file);
+			InputStream is = conn.getInputStream();
+			//OutputStream out = new FileOutputStream(file);
+			int length = 0;
+			byte[] buffer = new byte[1024];
+			while((length = is.read(buffer,0,1024)) != -1) {
+				out.write(buffer,0,length);
+			}
+			return file;
+			
+		}catch(IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	
 	

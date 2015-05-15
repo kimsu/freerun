@@ -244,6 +244,7 @@
 					style="@style/LayoutSorceItemContent"
                     android:text="无"/>
             </FrameLayout>
+            <!--
             <FrameLayout 
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -258,6 +259,7 @@
                     android:text="无"/>
                 
             </FrameLayout>
+            -->
         </LinearLayout> 				<!-- the best score, end -->
         
             <RelativeLayout 
@@ -290,7 +292,7 @@
 					android:layout_toLeftOf="@id/common_icon_arrow" 
 					android:layout_centerVertical="true"
 					android:textSize="15sp"
-					android:text="1 次"/>
+					android:text="无"/>
             </RelativeLayout> <!-- run history record, End -->  
 <!--             
             <RelativeLayout 
