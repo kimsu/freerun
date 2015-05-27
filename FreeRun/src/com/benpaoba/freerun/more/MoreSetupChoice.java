@@ -19,6 +19,7 @@ import com.benpaoba.freerun.FreeRunConstants;
 import com.benpaoba.freerun.LoginAndProfileInfo;
 import com.benpaoba.freerun.R;
 import com.benpaoba.freerun.Utils;
+import com.benpaoba.freerun.WlecomActivity;
 import com.tencent.tauth.Tencent;
 import com.umeng.fb.FeedbackAgent;
 import com.umeng.update.UmengUpdateAgent;
@@ -131,7 +132,6 @@ public class MoreSetupChoice extends Fragment {
 		});
 		
 		mExit_Login.setOnClickListener( new OnClickListener() {
-			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -140,15 +140,16 @@ public class MoreSetupChoice extends Fragment {
 				mTencent.logout(getActivity().getApplicationContext());
 				logStatePreference
             	.edit()
-            		.putBoolean(LoginAndProfileInfo.LOGSTATE, false)
+            		.putBoolean(FreeRunConstants.LOGIN_STATUS, false)
             			.commit();
-				Fragment loginFragment = new LoginAndProfileInfo();  
-				//loginFragment.setArguments(bundle);  
-				getActivity().getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
-				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
-				.commit();  
-				
-				
+//				Fragment loginFragment = new LoginAndProfileInfo();  
+//				getActivity().getFragmentManager().beginTransaction().replace(R.id.tab_content, loginFragment)
+//				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)  
+//				.commit();
+				Intent intent = new Intent();
+				intent.setClass(getActivity(), WlecomActivity.class);
+//				intent.setClassName(getActivity(), "com.benpaoba.freerun.WlecomActivity");
+				startActivity(intent);
 				}
 		
 		});		

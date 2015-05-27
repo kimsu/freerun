@@ -83,7 +83,6 @@ public class LoginAndProfileInfo extends Fragment {
 	private long mTotalCaloriesVal = 0;
 	
 	// total info item for preference
-	public static final String LOGSTATE = "log_state";
 	 static final String NICKNAME = "nickname";
 	 static final String TOTALDISTANCE = "total_distance";
 	 static final String TOTALTIME = "total_time";
@@ -105,7 +104,7 @@ public class LoginAndProfileInfo extends Fragment {
 	
 	static final String HISTORYTIMES = "run_history_times";
 
-	protected static final String ICON = "user_icon";
+	protected static final String ICON = "user_icon.png";
 	//More setup Choice
 //	private RelativeLayout mMoreSetup;
 	
@@ -145,62 +144,62 @@ public class LoginAndProfileInfo extends Fragment {
 		mLoginDataPreference = mContext.getSharedPreferences(FreeRunConstants.PROFILE_INFO_PREFERENCES,
 				Context.MODE_PRIVATE);
 		mPath = mContext.getCacheDir().getPath();
-		mLogState = mLoginDataPreference.getBoolean(LOGSTATE, false);
+		mLogState = mLoginDataPreference.getBoolean(FreeRunConstants.LOGIN_STATUS, false);
 		handleLogin();
-		updateHistoryRecordFromServer();
+//		updateHistoryRecordFromServer();
 		onListenMyItemClick();
 		
 	}
 	
-	private void updateHistoryRecordFromServer() {
-		AsyncHttpClient client = new AsyncHttpClient();
-    	RequestParams requestParams = new RequestParams();
-    	requestParams.put("index", SportsManager.QUERY_FROM_SERVER);
-    	requestParams.put("user_id", 1234);
-        mIsLatestState = mLoginDataPreference.getBoolean("is_latest", false);
-        Log.d(TAG,"updateHistoryRecoedFromServer, mIsLatestState = " + mIsLatestState);
-    	if(true) {
-    		client.post(SportsManager.SERVER_PATH, requestParams,
-    				new AsyncHttpResponseHandler() {
-    			        ProgressDialog dialog = new ProgressDialog(getActivity());
-    					@Override
-    					public void onStart() {
-    						// TODO Auto-generated method stub
-    						dialog.setTitle("提示信息");
-    		                dialog.setMessage("正在同步服务器的数据至本地。。。");
-    		                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-    		                dialog.setCancelable(true);
-    						dialog.show();
-    					}
-
-    					@Override
-    					public void onFailure(int statusCode,
-    							Header[] headers, byte[] responseBody,Throwable error) {
-    						// TODO Auto-generated method stub
-    						Log.d(TAG, "onFailure ==========" + statusCode + ", headers = " + headers);
-    						
-    						Message msg = new Message();
-    						msg.obj = responseBody;
-    						msg.what = 3;
-    						mHandler.sendMessage(msg);
-    						dialog.dismiss();
-    					}
-
-    					@Override
-    					public void onSuccess(int statusCode,
-    							Header[] headers, byte[] responseBody) {
-    						// TODO Auto-generated method stub
-    						Log.d(TAG, "onSuccess ==========" + statusCode + ", headers = " + headers);
-    						Message msg = new Message();
-    						msg.obj = responseBody;
-    						msg.what = 2;
-    						mHandler.sendMessage(msg);
-    						mLoginDataPreference.edit().putBoolean("is_latest", true).commit();
-    						dialog.dismiss();
-    					}
-        	});
-        }
-	}
+//	private void updateHistoryRecordFromServer() {
+//		AsyncHttpClient client = new AsyncHttpClient();
+//    	RequestParams requestParams = new RequestParams();
+//    	requestParams.put("index", SportsManager.QUERY_FROM_SERVER);
+//    	requestParams.put("user_id", 1234);
+//        mIsLatestState = mLoginDataPreference.getBoolean("is_latest", false);
+//        Log.d(TAG,"updateHistoryRecoedFromServer, mIsLatestState = " + mIsLatestState);
+//    	if(true) {
+//    		client.post(SportsManager.SERVER_PATH, requestParams,
+//    				new AsyncHttpResponseHandler() {
+//    			        ProgressDialog dialog = new ProgressDialog(getActivity());
+//    					@Override
+//    					public void onStart() {
+//    						// TODO Auto-generated method stub
+//    						dialog.setTitle("提示信息");
+//    		                dialog.setMessage("正在同步服务器的数据至本地。。。");
+//    		                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//    		                dialog.setCancelable(true);
+//    						dialog.show();
+//    					}
+//
+//    					@Override
+//    					public void onFailure(int statusCode,
+//    							Header[] headers, byte[] responseBody,Throwable error) {
+//    						// TODO Auto-generated method stub
+//    						Log.d(TAG, "onFailure ==========" + statusCode + ", headers = " + headers);
+//    						
+//    						Message msg = new Message();
+//    						msg.obj = responseBody;
+//    						msg.what = 3;
+//    						mHandler.sendMessage(msg);
+//    						dialog.dismiss();
+//    					}
+//
+//    					@Override
+//    					public void onSuccess(int statusCode,
+//    							Header[] headers, byte[] responseBody) {
+//    						// TODO Auto-generated method stub
+//    						Log.d(TAG, "onSuccess ==========" + statusCode + ", headers = " + headers);
+//    						Message msg = new Message();
+//    						msg.obj = responseBody;
+//    						msg.what = 2;
+//    						mHandler.sendMessage(msg);
+//    						mLoginDataPreference.edit().putBoolean("is_latest", true).commit();
+//    						dialog.dismiss();
+//    					}
+//        	});
+//        }
+//	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -322,7 +321,6 @@ private void  onListenMyItemClick() {
 			//mUserIcon.setImageResource(R.id.user_icon);
 			mLogout.setVisibility(View.GONE);
 			mLogin.setVisibility(View.VISIBLE);
-			
 			//user simple Info
 			{
 				mUserIconDefault.setVisibility(View.GONE);
@@ -614,10 +612,8 @@ private void  onListenMyItemClick() {
 					msg.what = 0;
 					mHandler.sendMessage(msg);
 					new Thread(){
-						
 						@Override
 						public void run() {
-							Log.d(TAG, "====> run()");
 							JSONObject json = (JSONObject)response;
 							if(json.has("figureurl")){
 								Bitmap bitmap = null;
@@ -647,12 +643,6 @@ private void  onListenMyItemClick() {
 			mInfo.getUserInfo(listener);
 			Log.d(TAG,"After listener");
 			//show the user personal mLogin info.
-			mLogState = true;
-			mLoginDataPreference
-        	.edit()
-        		.putBoolean(LOGSTATE, true)
-        			.commit();
-        	handleLogin();
 
 		} else {
 			Log.d(TAG, "isSessionVaild =false, Don't Login." );
@@ -682,13 +672,9 @@ private void  onListenMyItemClick() {
 				Bitmap bitmap = (Bitmap)msg.obj;
 				mUserIcon.setImageBitmap(bitmap);
 				
-				if(bitmap != null ) {
-					Log.d(TAG, bitmap.toString());
-				}else {
+				if(bitmap == null ) {
 					Log.e(TAG, "bitmap is null");
 				}
-				
-				
 				try {
 					saveBitmapToFile(bitmap, mPath + "/" + ICON);
 				}catch(IOException e) {
@@ -696,6 +682,13 @@ private void  onListenMyItemClick() {
 					e.printStackTrace();
 				}
 				
+				//Finish to download the user icon Image, then update the obtained info.
+				mLogState = true;
+				mLoginDataPreference
+	        	.edit()
+	        		.putBoolean(FreeRunConstants.LOGIN_STATUS, true)
+	        			.commit();
+	        	handleLogin();
 			}else if(msg.what == 2) {
 				byte[] data = (byte[]) msg.obj;
 				String str = new String(data);

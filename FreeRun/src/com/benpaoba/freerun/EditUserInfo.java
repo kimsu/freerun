@@ -2,8 +2,13 @@ package com.benpaoba.freerun;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.apache.http.Header;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,13 +32,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 public class EditUserInfo extends Activity {
 	private final String TAG = "FreeRun";
@@ -42,13 +51,16 @@ public class EditUserInfo extends Activity {
 	private static final int CAMERA_REQUEST_CODE = 1;
 	private static final int RESULT_REQUEST_CODE = 2;
 
-	protected static final String ICON = "user_icon";
+	protected static final String ICON = "user_icon.png";
 	private static final String IMAGE_FILE_NAME = "image.jpg";
 	private static final String NICKNAME = "nickname_text";
 	private static final String SEX = "sex_text";
 	private static final String LOCATION = "location_text";
 	private static final String HEIGHT = "height_text";
-	private static final String WEIGHT = "weight_text";
+	private static final String WEIGHT = "weight_text";    
+	
+	private boolean infoUpdateFlag = false;
+	private boolean iconUpdateFlag = false;
 	
 	private ImageButton back_up;
 	private RelativeLayout editIcon;
@@ -67,11 +79,15 @@ public class EditUserInfo extends Activity {
 //	private Button exit;
 	private static String path;
 	
-	
 	private SharedPreferences userInfoPreference;
 	private static String[] photo_select_item = new String[]{"选择本地图片", "拍照"};
 	private static String[] sex_item = new String[]{"男", "女"};
 	
+	private JSONObject mJSONObject;
+	private RequestParams mRequestParams;
+	private AsyncHttpClient mAsyncHttpClient;
+	
+	private String url = "http://192.168.1.137:8080/FirstServlet/servlet/JsonServlet";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -107,8 +123,9 @@ public class EditUserInfo extends Activity {
 				.setItems(photo_select_item, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
+						iconUpdateFlag = true;
 						switch (which) {
-						case 0 :
+						case 0 :      //select a image used for a icon from the image directory;
 							Intent intentFromGallery =new Intent(
 			                        Intent.ACTION_PICK,
 			                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI); 
@@ -121,7 +138,7 @@ public class EditUserInfo extends Activity {
 							startActivityForResult(intentFromGallery,
 								IMAGE_REQUEST_CODE);
 							break;
-						case 1 :
+						case 1 :  //photo a picture used for icon  
 							Intent intentFromCapture = new Intent(
 								android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 							// 判断存储卡是否可以用，可用进行存储
@@ -179,6 +196,7 @@ public class EditUserInfo extends Activity {
 										    userInfoPreference.edit()
 										    .putString(NICKNAME, editTextContent)
 										    .commit();
+										    infoUpdateFlag = true;
 											
 										}
 								}
@@ -216,6 +234,7 @@ public class EditUserInfo extends Activity {
 						sex_text.setText(sex_item[which]);
 						userInfoPreference.edit()
 						.putString(SEX, sex_item[which]).commit();
+						infoUpdateFlag = true;
 	
 					}
 				})
@@ -242,6 +261,7 @@ public class EditUserInfo extends Activity {
 						location_text.setText(FreeRunConstants.LOCATION[which]);
 						userInfoPreference.edit()
 						.putString(LOCATION, FreeRunConstants.LOCATION[which]).commit();
+						infoUpdateFlag = true;
 						
 					}
 				})
@@ -268,11 +288,10 @@ public class EditUserInfo extends Activity {
 						userInfoPreference.edit()
 						.putString(HEIGHT, FreeRunConstants.HEIGHTS[which])
 						.commit();
+						infoUpdateFlag = true;
 					}
 				})
 				.create().show();
-
-				
 			}
 		});
 		
@@ -295,6 +314,7 @@ public class EditUserInfo extends Activity {
 						userInfoPreference.edit()
 						.putString(WEIGHT, FreeRunConstants.WEIGHT[which])
 						.commit();
+						infoUpdateFlag = true;
 					}
 				})
 				.create().show();
@@ -349,11 +369,80 @@ public class EditUserInfo extends Activity {
 		
 	}
 	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		//User icon or Profile info has been update, then upload to server
+		if(iconUpdateFlag || infoUpdateFlag) {
+//			new Thread() {
+//				@Override
+//				public void run() {
+//					Looper.prepare();
+					mRequestParams = new RequestParams();
+					mAsyncHttpClient = new AsyncHttpClient();
+					if(infoUpdateFlag == true) {  //build JSONObject for User profile Info
+						mJSONObject = new JSONObject();
+						try {
+							mJSONObject.put(NICKNAME,
+									userInfoPreference.getString(NICKNAME, "Jeff"));
+//							mJSONObject.put(SEX, 
+//									userInfoPreference.getString(SEX, "男"));
+							mJSONObject.put(SEX, true);
+							mJSONObject.put(LOCATION, 
+									userInfoPreference.getString(LOCATION, "上海"));
+							mJSONObject.put(HEIGHT, 
+									userInfoPreference.getString(HEIGHT, "172cm"));
+							mJSONObject.put(WEIGHT, 
+									userInfoPreference.getString(WEIGHT, "60kg"));
+							mRequestParams.put("USER_PROFILE_INFO",	mJSONObject);
+//							mRequestParams.put("USER_PROFILE_INFO", mJSONObject.toString());
+//							mRequestParams.setForceMultipartEntityContentType(true);
+						}catch(JSONException e) {
+							e.printStackTrace();
+					 	}
+					} 
+					if (iconUpdateFlag == true) { //build image file for user icon
+						try {
+							File iconFile = new File(
+									getCacheDir().getPath() + "/" + ICON);
+							mRequestParams.put("USER_ICON", iconFile);
+						} catch(FileNotFoundException e) {
+							e.printStackTrace();
+						}
+						
+					}
+					Log.d(TAG, "start post");
+					mAsyncHttpClient.post(url, mRequestParams, 
+							new AsyncHttpResponseHandler() {
+								
+								@Override
+								public void onSuccess(int statusCode, Header[] header, byte[] body) {
+									// TODO Auto-generated method stub
+									Log.d(TAG, "statusCode: " + statusCode + "\n" 
+											+ "Response Body: " + new String(body).toString());
+								}
+								@Override
+								public void onFailure(int statusCode, Header[] arg1, byte[] body, Throwable e) {
+									// TODO Auto-generated method stub
+									Log.d(TAG, "statusCode: " + statusCode + "\n" 
+											+ "Throwable Info: " + e.getMessage());
+									if(null != body) {
+										System.out.println("Response Body: " + new String(body).toString());
+									}
+								}
+							});
+//				};
+//			}.start();
+		}
+		
+	}
+	
+	
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.d(TAG, "requestCode = " + requestCode + "  resultCode = " + resultCode);
-		//返回结果码不等于取消
+		//返回结果码不等于取消  
 		if(RESULT_CANCELED != resultCode) { 
 			switch(requestCode) {
 			case IMAGE_REQUEST_CODE :
@@ -429,8 +518,8 @@ public class EditUserInfo extends Activity {
 		intent.putExtra("return-data", true);
 		startActivityForResult(intent, RESULT_REQUEST_CODE);
 	}
-	
-	//保存裁剪之后的图盘数据
+	//更新裁剪后的图片头像，并将该头像保存
+	//到/data/data/com.benpaoba.freerun/Cache/文件夹下
 	private void getImageToView(Intent data) {
 		Bundle extras = data.getExtras();
 		if(extras != null) {
@@ -444,9 +533,6 @@ public class EditUserInfo extends Activity {
 				Log.e(TAG, "==>Error: " + e.getMessage());
 				e.printStackTrace();
 			}
-			
-			
-			
 		}
 	}
 	
