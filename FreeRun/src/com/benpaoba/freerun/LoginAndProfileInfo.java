@@ -262,9 +262,9 @@ private void  onListenMyItemClick() {
 			//Login Dialog 
 			mBuilder = new AlertDialog.Builder(mContext);
 			if(false == mLogState) {
-				mBuilder.setMessage("Do you want to mLogin ?")
+				mBuilder.setMessage(getActivity().getResources().getString(R.string.ask_for_login))
 				   .setCancelable(false)
-				   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				   .setPositiveButton(getActivity().getResources().getString(R.string.button_ok), new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int id) {
 				        	Log.d(TAG, "\n======  LONIN START  ============");
 //					            	mLogState = true;
@@ -275,7 +275,7 @@ private void  onListenMyItemClick() {
 					    			login();
 					           }
 					     })
-					.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					.setNegativeButton(getActivity().getResources().getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							dialog.dismiss();
 							

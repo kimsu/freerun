@@ -155,12 +155,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10.0dip" 
             android:layout_below="@id/layout_edt_info">
-            
             <Button 
                 android:textSize="24dp"
                 android:textColor="@color/white" 
                 android:id="@+id/btn_register" 
                 android:background="@color/palegreen"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="12dp"
                 android:layout_width="wrap_content" 
                 android:layout_height="50.0dip" 
                 android:text="@string/btn_register" 
@@ -172,9 +173,11 @@
                 android:background="@color/palegreen" 
                 android:layout_width="wrap_content" 
                 android:layout_height="50.0dip" 
-                android:layout_marginLeft="1.0dip" 
+                android:layout_marginLeft="12dip"
+                android:layout_marginRight="24dp" 
                 android:text="@string/btn_login" 
                 android:layout_weight="1.0"  />
+            
         </LinearLayout>
     </RelativeLayout>
     

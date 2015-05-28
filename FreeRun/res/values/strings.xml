@@ -37,7 +37,7 @@
     <string name="btn_register">注册</string>
     <string name="btn_login">登陆</string>
     <string name="please_account_pwd">请输入密码</string>
-    
+    <string name="ask_for_login">你确认要登录吗？</string>
     <!-- 注册须知 -->
     <string name="titleOfInstrction">注册须知</string>
     <string name="agreement">您可安装无限制数量的本软件产品来使用。复制、分发和传播：您可以复制、分发和传播无限制数量的软件产品，但您必须保证每一份复制、
